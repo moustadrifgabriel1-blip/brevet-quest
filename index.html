@@ -104,10 +104,10 @@ const $=s=>document.querySelector(s),app=$('#app');
 const NCH=L.length-1;                       // nombre de chapitres, deduit de data.js
 const TOTALQ=[...Array(NCH)].reduce((a,_,i)=>a+L[i+1].q.length,0);
 const TOTETOILES=NCH*3;
-const RANKS=[[0,'Apprenti'],[300,'Aide-monteur'],[800,'Monteur de réseau'],[1600,'Chef d\'équipe'],[2800,'Contremaître'],[4200,'Chef de projet'],[6000,'Spécialiste de réseau breveté']];
-const FOES=['📎','⏳','⚔️','🕵️','👻','🪤','😵','🧨','🏃','🦠','⏱️','🫥','🦀','⚡','🪓','🐛'];
-const BOSSES=[['📊','Le Planificateur implacable'],['⚖️','Le Juriste du contrat'],['🦺','Le Gardien du chantier'],['⚙️','Le Maître des machines'],['🏭','Le Seigneur du réseau'],['🗼','Le Colosse de bois']];
-const FOENAMES=['Paperassier','Retardeur','Litige','Sous-traiteur','Devis fantôme','Clause cachée','Négligence','Danger sournois','Raccourci','Panne rampante','Usure','Défaut latent','Rouille','Court-jus','Vandale','Termite'];
+const RANKS=[[0,'Apprenti'],[450,'Aide-monteur'],[1250,'Monteur de réseau'],[2500,'Chef d\'équipe'],[4400,'Contremaître'],[6600,'Chef de projet'],[9400,'Spécialiste de réseau breveté']];
+const FOES=['📎','⏳','⚔️','🕵️','👻','🪤','😵','🧨','🏃','🦠','⏱️','🫥','🦀','⚡','🪓','🐛','🗺️','🔌','📉','📏','🎭','🔒','🛡️','🧲','📋','🌊','🗿','🧮','🏚️','🔋','🌦️','🛢️','💡','📝'];
+const BOSSES=[['📊','Le Planificateur implacable'],['⚖️','Le Juriste du contrat'],['🦺','Le Gardien du chantier'],['⚙️','Le Maître des machines'],['🏭','Le Seigneur du réseau'],['🗼','Le Colosse de bois'],['🗺️','L\'Architecte du réseau'],['⚡','Le Consignateur'],['🚧','Le Chef de chantier'],['🌍','Le Gardien des potentiels'],['🎛️','Le Maître de l\'exploitation']];
+const FOENAMES=['Paperassier','Retardeur','Litige','Sous-traiteur','Devis fantôme','Clause cachée','Négligence','Danger sournois','Raccourci','Panne rampante','Usure','Défaut latent','Rouille','Court-jus','Vandale','Termite','Topologie tordue','Surcharge','Simultanéité trompeuse','Section trop juste','Faux consigné','Verrou oublié','Arc sournois','Câble récalcitrant','Dossier bancal','Potentiel vagabond','Sol rocheux','Facteur quatre','Neutre baladeur','Fuite capacitive','Coup de vent','Réinjection','Phase pivotée','Check-list trouée'];
 let S={xp:0,coins:0,done:{},boss:{},sr:{},streak:{last:'',n:0},day:{d:'',n:0},free:false,pot:0,notif:{on:true,h:19,m:30}};
 try{S=Object.assign(S,JSON.parse(localStorage.getItem('bq1')||'{}'))}catch(e){}
 const save=()=>{try{localStorage.setItem('bq1',JSON.stringify(S))}catch(e){}};
@@ -177,7 +177,7 @@ const emo=isBoss?BOSSES[w][0]:FOES[o.li-1],nm=isBoss?BOSSES[w][1]:FOENAMES[o.li-
 const TMAX=isBoss?(w===4?40:30):0;let i=0,hp=qs.length,hearts=isBoss?3:4,combo=0,xp=0,coins=0,timer=null;const res=[],miss=[];let pot=!isBoss&&S.coins>=30;
 const dmgFx=t=>{const d=document.createElement('div');d.className='dmg';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1000)};
 const show=()=>{clearInterval(timer);const x=qs[i],q=x.q;let body='',st={};
-if(q.t==='qcm')body=`<div class="opts">${q.c.map((c,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${c}</button>`).join('')}</div>`;
+if(q.t==='qcm')body=`<div class="opts">${shuffle(q.c.map((c,k)=>k)).map((k,p)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[p]}</span>${q.c[k]}</button>`).join('')}</div>`;
 if(q.t==='vf')body=`<div class="opts"><button class="opt" data-k="1"><span class="k">V</span>Vrai</button><button class="opt" data-k="0"><span class="k">F</span>Faux</button></div>`;
 if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off"><span class="u">${q.u}</span><button class="btn" id="val">OK</button></div>`;
 if(q.t==='order'){st.items=shuffle(q.i);st.pick=[];body=`<p style="color:var(--muted);font-size:13px;margin:0 0 8px">Touche les étapes dans le bon ordre.</p><div class="opts order" id="ord"></div>`}
@@ -215,7 +215,7 @@ ${frag?`<div style="height:8px"></div><button class="btn wide ghost" id="frag">�
 const g=$('#go');if(g)g.onclick=()=>session(due.slice(0,15),'Révision du jour');const f=$('#frag');if(f)f.onclick=()=>session(shuffle(all.filter(x=>x.r&&x.r.f>0&&x.r.n<3)).slice(0,10),'Points fragiles');$('#mix').onclick=()=>session(shuffle(all).slice(0,15),'Examen blanc')}
 function session(list,title){if(!list.length){train();return}touchStreak();tabs();let i=0,xp=0;const res=[],miss=[];
 const show=()=>{const x=list[i],q=x.q;let body='',st={};
-if(q.t==='qcm')body=`<div class="opts">${q.c.map((c,k)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[k]}</span>${c}</button>`).join('')}</div>`;
+if(q.t==='qcm')body=`<div class="opts">${shuffle(q.c.map((c,k)=>k)).map((k,p)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[p]}</span>${q.c[k]}</button>`).join('')}</div>`;
 if(q.t==='vf')body=`<div class="opts"><button class="opt" data-k="1"><span class="k">V</span>Vrai</button><button class="opt" data-k="0"><span class="k">F</span>Faux</button></div>`;
 if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off"><span class="u">${q.u}</span><button class="btn" id="val">OK</button></div>`;
 if(q.t==='order'){st.items=shuffle(q.i);st.pick=[];body=`<p style="color:var(--muted);font-size:13px;margin:0 0 8px">Touche les étapes dans le bon ordre.</p><div class="opts order" id="ord"></div>`}
@@ -239,8 +239,8 @@ app.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>brief(+b.dataset.l,0,t
 function profile(){tab='me';tabs();const r=rank(),tot=Object.values(S.done).reduce((a,b)=>a+b.st,0),all=allQ(),seen=Object.keys(S.sr).length;
 const stand=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
 app.innerHTML=hud()+`<div class="hero"><h1>🏅 <b>${r.name}</b></h1><p>${S.xp} XP · ${tot} / ${TOTETOILES} étoiles · série de ${S.streak.n} jour${S.streak.n>1?'s':''}</p></div>
-<div class="grid2"><div class="stat"><small>Questions vues</small><span>${seen} / ${TOTALQ}</span></div><div class="stat"><small>Maîtrisées</small><span style="color:var(--ok)">${all.filter(x=>x.r&&x.r.iv>=21).length}</span></div><div class="stat"><small>Pièces</small><span>🪙 ${S.coins}</span></div><div class="stat"><small>Boss vaincus</small><span>${Object.keys(S.boss).length} / 5</span></div></div>
-<div class="card"><div class="eyebrow">Trophées</div>${BOSSES.map((b,i)=>`<span class="badge${S.boss[i]?' on':''}" title="${b[1]}">${b[0]}</span>`).join('')}<span class="badge${S.streak.n>=7?' on':''}">🔥</span><span class="badge${tot>=TOTETOILES?' on':''}">🌟</span><span class="badge${S.xp>=6000?' on':''}">🎓</span></div>
+<div class="grid2"><div class="stat"><small>Questions vues</small><span>${seen} / ${TOTALQ}</span></div><div class="stat"><small>Maîtrisées</small><span style="color:var(--ok)">${all.filter(x=>x.r&&x.r.iv>=21).length}</span></div><div class="stat"><small>Pièces</small><span>🪙 ${S.coins}</span></div><div class="stat"><small>Boss vaincus</small><span>${Object.keys(S.boss).length} / ${BOSSES.length}</span></div></div>
+<div class="card"><div class="eyebrow">Trophées</div>${BOSSES.map((b,i)=>`<span class="badge${S.boss[i]?' on':''}" title="${b[1]}">${b[0]}</span>`).join('')}<span class="badge${S.streak.n>=7?' on':''}">🔥</span><span class="badge${tot>=TOTETOILES?' on':''}">🌟</span><span class="badge${S.xp>=RANKS[RANKS.length-1][0]?' on':''}">🎓</span></div>
 <div class="card"><div class="eyebrow">Chapitres</div>${[...Array(NCH)].map((_,i)=>{const li=i+1,d=S.done[li],qs=L[li].q.length,w=all.filter(x=>x.li===li&&x.r&&x.r.f>0&&x.r.n<3).length;return `<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)"><span>${li}. ${L[li].t}</span><span class="mono">${d?stars(d.st)+' '+(d.pct!=null?d.pct+'%':d.best+'/'+(d.tot||qs)):'—'}${w?' <span class="warn">'+w+' fragile'+(w>1?'s':'')+'</span>':''}</span></div>`}).join('')}</div>
 ${BRIDGE?`<div class="card"><div class="eyebrow">🔔 Rappel quotidien</div><p style="color:var(--muted);font-size:14px;margin:0 0 10px">Une notification par jour, à l'heure que tu choisis, tant qu'il te reste des questions à réviser.</p>
 <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px"><span>Activer</span><input type="checkbox" id="non" ${S.notif.on?'checked':''} style="width:24px;height:24px;accent-color:var(--amber)"></label>
