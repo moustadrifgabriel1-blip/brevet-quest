@@ -262,6 +262,7 @@ function profile(){tab='me';tabs();const r=rank(),tot=Object.values(S.done).redu
 const stand=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
 app.innerHTML=hud()+`<div class="hero"><h1>🏅 <b>${r.name}</b></h1><p>${S.xp} XP · ${tot} / ${TOTETOILES} étoiles · série de ${S.streak.n} jour${S.streak.n>1?'s':''}</p></div>
 <div class="grid2"><div class="stat"><small>Questions vues</small><span>${seen} / ${TOTALQ}</span></div><div class="stat"><small>Maîtrisées</small><span style="color:var(--ok)">${all.filter(x=>x.r&&x.r.iv>=21).length}</span></div><div class="stat"><small>Pièces</small><span>🪙 ${S.coins}</span></div><div class="stat"><small>Boss vaincus</small><span>${Object.keys(S.boss).length} / ${BOSSES.length}</span></div></div>
+<div class="card"><div class="eyebrow">👥 Ma classe</div><p style="color:var(--muted);font-size:14px;margin:6px 0 10px">${S.classe&&S.classe.code?`Classe <b class="mono" style="letter-spacing:2px">${S.classe.code}</b>, pseudo <b>${S.classe.pseudo}</b>.`:`Rejoins tes camarades avec un code à six lettres et comparez votre progression.`}</p><button class="btn wide ghost" id="classe">${S.classe&&S.classe.code?`Voir le classement`:`Rejoindre ou créer une classe`}</button></div>
 <div class="card"><div class="eyebrow">Trophées</div>${BOSSES.map((b,i)=>`<span class="badge${S.boss[i]?' on':''}" title="${b[1]}">${b[0]}</span>`).join('')}<span class="badge${S.streak.n>=7?' on':''}">🔥</span><span class="badge${tot>=TOTETOILES?' on':''}">🌟</span><span class="badge${S.xp>=RANKS[RANKS.length-1][0]?' on':''}">🎓</span></div>
 <div class="card"><div class="eyebrow">Où j'en suis par épreuve</div><p style="color:var(--muted);font-size:13.5px;margin:6px 0 10px">Pour réussir : moyenne 4,0, au plus une épreuve sous 4,0, aucune sous 3,0. Les épreuves 2 et 3 comptent autant que la 4.</p>${EPR.map((e,i)=>{const st=eprStat(i);return `<div style="padding:7px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;font-size:14px"><span><b>${e.n}</b> · ${e.t} · ${e.p}</span><span class="mono">${st.mast} %</span></div><div class="ebar" style="margin:6px 0 4px"><i style="width:${st.mast}%"></i></div><small style="color:var(--muted)">${st.seen} % des ${st.tot} questions vues · ${st.mast} % ancrées à trois semaines${st.frag?' · <span class="warn">'+st.frag+' fragile'+(st.frag>1?'s':'')+'</span>':''}</small></div>`}).join('')}</div>
 <div class="card"><div class="eyebrow">Chapitres</div>${[...Array(NCH)].map((_,i)=>{const li=i+1,d=S.done[li],qs=L[li].q.length,w=all.filter(x=>x.li===li&&x.r&&x.r.f>0&&x.r.n<3).length;return `<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)"><span>${li}. ${L[li].t}</span><span class="mono">${d?stars(d.st)+' '+(d.pct!=null?d.pct+'%':d.best+'/'+(d.tot||qs)):'—'}${w?' <span class="warn">'+w+' fragile'+(w>1?'s':'')+'</span>':''}</span></div>`}).join('')}</div>
@@ -276,10 +277,11 @@ $('#non').onchange=e=>{S.notif.on=e.target.checked;maj()};
 $('#nheure').onchange=e=>{const v=(e.target.value||'19:30').split(':');S.notif.h=+v[0];S.notif.m=+v[1];maj()}}
 $('#exp').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(JSON.stringify(S));prompt('Copie ce texte pour le sauvegarder :',JSON.stringify(S))};
 $('#imp').onclick=()=>{const v=prompt('Colle ta sauvegarde :');if(!v)return;try{S=Object.assign(S,JSON.parse(v));save();profile()}catch(e){alert('Sauvegarde illisible.')}};
-$('#reset').onclick=()=>{if(confirm('Tout effacer ? XP, étoiles, mémoire de révision.')){localStorage.removeItem('bq1');location.reload()}}}
+$('#reset').onclick=()=>{if(confirm('Tout effacer ? XP, étoiles, mémoire de révision.')){localStorage.removeItem('bq1');location.reload()}};const cb=$('#classe');if(cb)cb.onclick=()=>classe()}
 /* ===================== DÉMARRAGE ===================== */
 touchStreak();home();pushRappels();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
+<script src="classe.js"></script>
 </body>
 </html>
