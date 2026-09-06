@@ -1,1 +1,1 @@
-[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"com.gabmoustadrif.brevetquest","sha256_cert_fingerprints":[""]}}]
+[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"com.gabmoustadrif.brevetquest","sha256_cert_fingerprints":["5F:8B:F2:82:F7:6E:96:BB:0A:EE:30:D0:A2:E8:D2:02:86:E4:B8:BC:AC:96:45:50:7E:AC:29:C1:68:C2:23:E1"]}}]
