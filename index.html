@@ -97,8 +97,7 @@ body:before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);bac
 <body>
 <div id="app"></div>
 <nav class="tabbar" id="tabs"></nav>
-<script src="data.js"></script>
-<script>
+<script type="text/plain" id="moteur">
 /* ===================== ÉTAT ===================== */
 const $=s=>document.querySelector(s),app=$('#app');
 const NCH=L.length-1;                       // nombre de chapitres, deduit de data.js
@@ -282,6 +281,6 @@ $('#reset').onclick=()=>{if(confirm('Tout effacer ? XP, étoiles, mémoire de r�
 touchStreak();home();pushRappels();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
-<script src="classe.js"></script>
+<script src="acces.js"></script>
 </body>
 </html>
