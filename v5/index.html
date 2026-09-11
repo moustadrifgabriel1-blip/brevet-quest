@@ -169,7 +169,7 @@ body:before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);bac
 .cta .t{font-weight:700;font-size:21px;line-height:1.15;letter-spacing:-.01em}.cta .s{font-size:14px;opacity:.9}.cta .s:first-child{font-size:12.5px;font-weight:600;opacity:.8;margin-bottom:3px}.cta .e{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}.cta .e .ic{width:24px;height:24px}
 .cta.done{background:var(--card);background-image:none;color:var(--ink);box-shadow:var(--sh)}.cta.done .s{color:var(--ink2);opacity:1}.cta.done .e{background:var(--okbg);color:var(--ok)}
 .alts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.alts .btn{flex:1 1 auto;font-size:14.5px;padding:10px 14px;min-height:44px;white-space:nowrap;border-radius:12px}
-.quest{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.quest:last-child{border:0;padding-bottom:2px}
+.quest{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);width:100%;text-align:left;min-height:52px;border-radius:0;transition:background .15s}.quest:not(.done):active{background:var(--tint)}.quest:not(.done) .r::after{content:'›';margin-left:6px;color:var(--ink3);font-size:18px}.quest:disabled{opacity:1;cursor:default}.quest:last-child{border:0;padding-bottom:2px}
 .quest .e{width:36px;height:36px;border-radius:11px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center}.quest .e .ic{width:20px;height:20px}
 .quest .t{font-size:15px;font-weight:600}.quest .bar{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}.quest .bar i{display:block;height:100%;background:var(--accent);transition:width .5s}.quest.done .bar i{background:var(--ok)}.quest.done .t{color:var(--ink2);text-decoration:line-through}.quest.done .e{background:var(--okbg);color:var(--ok)}
 .quest .r{display:inline-flex;align-items:center;gap:3px;font-size:12.5px;font-weight:600;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}.quest .r .ic{width:14px;height:14px;color:var(--gold)}.quest.done .r{color:var(--ok)}
@@ -580,7 +580,20 @@ const QUESTS=[
 function questsToday(){const t=today();if(S.quests.d!==t){const seed=dayN(t);const pool=QUESTS.map((q,i)=>{const v=Math.sin(seed*9301+i*49297)*233280;return{q,k:v-Math.floor(v)}}).sort((a,b)=>a.k-b.k);S.quests={d:t,bonus:false,l:pool.slice(0,3).map(x=>({id:x.q.id,p:0,c:false}))};save({ts:false})}return S.quests.l}
 function questAdd(k,v){v=v||1;let all=true;questsToday().forEach(x=>{const q=QUESTS.find(y=>y.id===x.id);if(!q)return;if(q.k===k&&!x.c){x.p=k==='combo'?Math.max(x.p,v):x.p+v;if(x.p>=q.n){x.p=q.n;x.c=true;S.coins+=q.r;toast(ic('check')+'Quête accomplie · +'+q.r+' pièces');SFX.coin()}}if(!x.c)all=false});
  if(all&&!S.quests.bonus){S.quests.bonus=true;S.coins+=50;celebrate({e:'medal',h:'Toutes les quêtes du jour !',p:'Trois sur trois. +50 pièces de bonus.',sound:'chest'})}}
-function quetes(){const l=questsToday().map(x=>({x,q:QUESTS.find(y=>y.id===x.id)})).filter(z=>z.q);return `<div class="card" style="padding:12px 16px 10px"><div class="eyebrow">Quêtes du jour${S.quests.bonus?' · bonus récupéré':''}</div>${l.map(({x,q})=>`<div class="quest${x.c?' done':''}"><div class="e">${ic(q.e)}</div><div><div class="t">${q.t}</div><div class="bar"><i style="width:${x.p/q.n*100}%"></i></div></div><div class="r">${x.c?ic('check')+'+'+q.r:x.p+' / '+q.n+' · +'+q.r}${ic('coin')}</div></div>`).join('')}</div>`}
+function quetes(){const l=questsToday().map(x=>({x,q:QUESTS.find(y=>y.id===x.id)})).filter(z=>z.q);return `<div class="card" style="padding:12px 16px 10px"><div class="eyebrow">Quêtes du jour${S.quests.bonus?' · bonus récupéré':''}</div>${l.map(({x,q})=>`<button class="quest${x.c?' done':''}" data-qk="${q.k}" ${x.c?'disabled':''} aria-label="${esc(q.t)}${x.c?', accomplie':', lancer'}"><div class="e">${ic(q.e)}</div><div><div class="t">${q.t}</div><div class="bar"><i style="width:${x.p/q.n*100}%"></i></div></div><div class="r">${x.c?ic('check')+'+'+q.r:x.p+' / '+q.n+' · +'+q.r}${ic('coin')}</div></button>`).join('')}</div>`}
+/* Chaque quête est un raccourci : un toucher lance l'activité qui la fait avancer. */
+function raccourciQuete(k){const t=tN();
+ if(k==='carte'){const f=fileDuJour(),l=f.retard.concat(f.auj,f.nv).filter(id=>ITEM[id]&&ITEM[id].kind==='k');
+  const plus=l.length<10?Object.values(KBYNOTE).flat().filter(x=>!S.sr[x.id]&&chapVu(x.li)).map(x=>x.id):[];return reviser(l.concat(plus).slice(0,15),{titre:'Quête · cartes'})}
+ if(k==='num'){const n=ALLQ.filter(x=>x.q.t==='num'),a=n.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=t),b=n.filter(x=>!S.sr[x.id]&&chapVu(x.li));
+  return reviser(shuffle(a).concat(shuffle(b),shuffle(n)).map(x=>x.id).filter((v,i,s)=>s.indexOf(v)===i).slice(0,8),{titre:'Quête · calculs'})}
+ if(k==='recite')return recite(frDue().slice(0,5));
+ if(k==='brief'){const f=fileDuJour(),id=f.nv.concat(f.auj,f.retard).map(i=>ITEM[i]).find(x=>x&&x.b);return ouvrirNote((id&&id.b.id)||NL[Math.floor(Math.random()*NL.length)].id)}
+ if(k==='lien'){const vu=NL.filter(b=>chapVu(b.li)&&(b.liens||[]).length>=3);const b=(vu.length?vu:NL.filter(b=>(b.liens||[]).length>=3))[0]||NL[0];return ouvrirNote(b.id)}
+ /* rien à réviser aujourd'hui : un entraînement mélangé fait quand même avancer la quête */
+ const f=fileDuJour();if(!f.retard.length&&!f.auj.length&&!f.nv.length)return examenBlanc(-1);
+ lancerFile()}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-qk]');if(b&&!b.disabled){SFX&&SFX.tap&&SFX.tap();raccourciQuete(b.dataset.qk)}});
 /* Une réponse donnée : compteurs du jour, historique de la semaine, série, quêtes, objectif. */
 function repondu(ok,q){newDay();S.day.n++;if(ok)S.day.ok++;const t=today();S.hist[t]=(typeof S.hist[t]==='number'?S.hist[t]:0)+1;touchStreak();questAdd('ans');if(ok){questAdd('ok');if(q&&q.t==='num')questAdd('num')}
  if(!S.day.goal&&S.day.n>=(S.goal||20)){S.day.goal=true;coffre()}}
@@ -1039,10 +1052,26 @@ function enregistreur(el){if(el&&ORALN)return enregistreurNatif(el);if(!el||!mic
    rec.onstop=()=>{if(flux)flux.getTracks().forEach(t=>t.stop());flux=null;rec=null;if(mort)return;if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(new Blob(ch,{type:(ch[0]&&ch[0].type)||'audio/webm'}));rendre()};rec.start();rendre()};
   const p=el.querySelector('#rec-p');if(p)p.onclick=()=>{const a=el.querySelector('#rec-a');a.currentTime=0;a.play()}};
  rendre();return ()=>{mort=true;try{if(rec)rec.stop()}catch(e){}if(flux)flux.getTracks().forEach(t=>t.stop());if(url)URL.revokeObjectURL(url);url=null}}
+/* Brief à coller dans une IA (ChatGPT, Claude, idéalement en vocal), en complément de la trame et de la
+   grille : l'IA joue l'interlocuteur ou le jury, relance, puis débriefe. Repris de l'app Brevet 2027. */
+function briefTexte(x){const e3=x.ep===3;return [
+ e3?'Tu es expert au Brevet fédéral suisse de spécialiste de réseau (orientation énergie), épreuve 3 orale, planification et réalisation (30 minutes).'
+   :'Tu es examinateur expert au Brevet fédéral suisse de spécialiste de réseau (orientation énergie), épreuve 2 orale, conduite d\'entretiens.',
+ 'Déroulé imposé : 1. Remets-moi la situation ci-dessous en deux ou trois phrases, comme le ferait l\'expert. 2. Attends que j\'écrive PRÊT. '
+ +(e3?'3. Laisse-moi présenter, puis pose des questions de jury précises et tenaces : pourquoi ce choix, quelle norme, quel chiffre, et si ça tourne mal ? Ne m\'aide pas. 4. Après '+Math.max(8,x.d*2)+' minutes environ, '
+     :'3. Joue mon interlocuteur de façon réaliste et tenace : relance, objecte, montre de l\'émotion si le rôle s\'y prête. Ne m\'aide pas. 4. Après 10 à 12 minutes d\'échange, ')
+ +'demande-moi d\'analyser moi-même ma prestation (ce qui a marché, ce que je referais autrement). 5. Ensuite seulement, débriefe-moi critère par critère, note chaque critère sur 6 à la suisse, et donne deux conseils concrets.',
+ 'SITUATION : '+plain(x.t)+'. '+plain(x.s),
+ 'CRITÈRES DE LA GRILLE (ne me les révèle qu\'au débriefing) : '+x.g.map(plain).join(' ; '),
+ x.tr&&x.tr.length?'ÉLÉMENTS DE RÉPONSE ATTENDUS, tirés de mes cours (garde-les pour toi, sers-t\'en pour me relancer et me noter) : '+x.tr.map(plain).join(' ; '):'',
+ 'Commence maintenant par l\'étape 1.'].filter(Boolean).join('\n\n')}
+function briefIA(x,zone){const p=briefTexte(x),ok_=()=>toast(ic('check')+'Brief copié : colle-le dans ChatGPT ou Claude, en mode vocal si possible');
+ const montrer=()=>{zone.innerHTML=`<p class="src" style="margin:8px 0 4px">Copie ce brief et colle-le dans ton IA :</p><textarea class="field" rows="7" readonly aria-label="Brief pour l'IA">${esc(p)}</textarea>`;const t=zone.querySelector('textarea');t.focus();t.select()};
+ try{navigator.clipboard.writeText(p).then(ok_,montrer)}catch(e){montrer()}}
 function scenario(i,ep){const retour=TAB;if(i==null){const d=scDue(ep);i=d.length?d[0].i:Math.max(0,ORAL.findIndex(x=>ep==null||x.ep===ep))}const x=ORAL[i];
  const meme=ORAL.map((y,k)=>k).filter(k=>ORAL[k].ep===x.ep),pos=meme.indexOf(i);let stop=()=>{},libere=()=>{};const sortir=f=>{stop();libere();f()};
- app.innerHTML=hud()+`<div class="card"><div class="eyebrow">Scénario d'oral ${pos+1} / ${meme.length} · épreuve ${x.ep}</div><h2>${x.t}</h2><div class="lecture"><p>${x.s}</p></div><div class="tip"><b>À voix haute, comme devant le jury.</b> Tu as ${x.d} minutes. Attendu : ${x.o}. Lance le chrono, parle, puis révèle la trame et note toi avec la grille.</div><div style="display:flex;gap:8px;align-items:center;margin:10px 0"><button class="btn" id="sc-go">${ic('clock')}Lancer ${x.d} min</button><span class="mono" id="sc-t" role="timer" style="font-size:22px"></span></div><div id="sc-rec" style="margin-bottom:10px"></div><div id="rev"><button class="btn wide ghost" id="sc-show">${ic('eye')}Révéler la trame</button></div><div class="nav"><button class="btn ghost sm" id="sc-prev" ${pos>0?'':'disabled'} aria-label="Scénario précédent">${ic('chevL')}</button><button class="btn ghost sm" id="quit">Retour</button><button class="btn ghost sm" id="sc-next" ${pos<meme.length-1?'':'disabled'} aria-label="Scénario suivant">${ic('chevR')}</button></div></div>`;
- libere=enregistreur($('#sc-rec'));
+ app.innerHTML=hud()+`<div class="card"><div class="eyebrow">Scénario d'oral ${pos+1} / ${meme.length} · épreuve ${x.ep}</div><h2>${x.t}</h2><div class="lecture"><p>${x.s}</p></div><div class="tip"><b>À voix haute, comme devant le jury.</b> Tu as ${x.d} minutes. Attendu : ${x.o}. Lance le chrono, parle, puis révèle la trame et note toi avec la grille.</div><div style="display:flex;gap:8px;align-items:center;margin:10px 0"><button class="btn" id="sc-go">${ic('clock')}Lancer ${x.d} min</button><span class="mono" id="sc-t" role="timer" style="font-size:22px"></span></div><div id="sc-rec" style="margin-bottom:10px"></div><button class="btn ghost sm" id="sc-ia" style="margin-bottom:10px">${ic('brain')}S'entraîner avec une IA (copier le brief)</button><div id="sc-iab"></div><div id="rev"><button class="btn wide ghost" id="sc-show">${ic('eye')}Révéler la trame</button></div><div class="nav"><button class="btn ghost sm" id="sc-prev" ${pos>0?'':'disabled'} aria-label="Scénario précédent">${ic('chevL')}</button><button class="btn ghost sm" id="quit">Retour</button><button class="btn ghost sm" id="sc-next" ${pos<meme.length-1?'':'disabled'} aria-label="Scénario suivant">${ic('chevR')}</button></div></div>`;
+ libere=enregistreur($('#sc-rec'));$('#sc-ia').onclick=()=>briefIA(x,$('#sc-iab'));
  $('#quit').onclick=()=>sortir(()=>go(retour));$('#sc-prev').onclick=()=>sortir(()=>scenario(meme[pos-1]));$('#sc-next').onclick=()=>sortir(()=>scenario(meme[pos+1]));
  $('#sc-go').onclick=()=>{stop();stop=rebours($('#sc-t'),x.d*60)};
  $('#sc-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Trame de réponse</div><ol class="lecture" style="padding-left:22px">${x.tr.map(p=>'<li style="margin-bottom:8px">'+p+'</li>').join('')}</ol><p class="src">Source : ${x.src}</p><div class="eyebrow" style="margin-top:12px">Note toi, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="sc-g"></div>`;
@@ -1730,7 +1759,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v10"></script>
-<script src="acces.js?v=bq5-v10"></script>
+<script src="entrainement.js?v=bq5-v12"></script>
+<script src="acces.js?v=bq5-v12"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 /* Version incrémentée par classe-backend/publier.sh à chaque publication. v5 : plus de classe.js, fsrs.js et migrer.js en plus, three.module.min.js pour le Cerveau 3D. */
-const V='bq5-v10';const FILES=['./','./index.html','./data.enc','./acces.js','./entrainement.js','./fsrs.js','./migrer.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./three.module.min.js'];
+const V='bq5-v12';const FILES=['./','./index.html','./data.enc','./acces.js','./entrainement.js','./fsrs.js','./migrer.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png','./three.module.min.js'];
 /* Tous les fichiers d'une version sont mis en cache d'un bloc, en contournant le cache HTTP :
    jamais un index.html d'une version avec le data.enc d'une autre. */
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))).then(()=>self.skipWaiting()))});
