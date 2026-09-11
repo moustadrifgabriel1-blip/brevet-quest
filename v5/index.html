@@ -484,8 +484,8 @@ window.recevoirCloud=function(txt){const fin=r=>{if(!cloudPret){cloudPret=true;p
  return 'fusionné, '+nbSr(S)+' cartes'+(aPousser?', renvoyé à iCloud':'')};
 
 /* ===================== SAUVEGARDES HORS APPAREIL (app native) =====================
-   L'app garde une copie de secours hebdomadaire dans le magasin clé-valeur iCloud (elle survit à
-   une réinstallation) et une copie datée par jour dans son dossier Documents (visible dans Fichiers). Ici on demande la liste, et on restaure en FUSIONNANT : une restauration
+   L'app garde une copie datée par jour dans son conteneur iCloud Drive (repli : son dossier Documents)
+   et une copie de secours hebdomadaire dans le magasin clé-valeur iCloud. Les deux survivent à une réinstallation. Ici on demande la liste, et on restaure en FUSIONNANT : une restauration
    ne doit jamais effacer ce qui a été révisé depuis la sauvegarde choisie. */
 let SAUVES=null;
 function listerSauvegardes(){if(!CLOUD)return;try{CLOUD.postMessage({lister:1})}catch(e){}}
@@ -1677,7 +1677,7 @@ function profil(){const r=rank(),all=TOUS(),E=compteEtats(all),vus=all.length-E.
  <label class="row"><span>Activer</span><input type="checkbox" id="non" ${S.notif.on?'checked':''}></label>
  <label class="row"><span>Heure</span><input type="time" id="nheure" class="field" style="width:auto;font-size:16px;padding:8px 12px" value="${String(S.notif.h).padStart(2,'0')}:${String(S.notif.m).padStart(2,'0')}"></label>
  <p id="nfb" style="font-size:13px;color:var(--ok);margin:10px 0 0;min-height:18px"></p></div>`:`<div class="card"><div class="eyebrow">Rappel quotidien</div><p style="color:var(--ink2);font-size:14.5px;margin:0">Les rappels passent par l'app iPhone ou Android. Ici, ils ne sont pas disponibles.</p></div>`}
- ${CLOUD?`<div class="card"><div class="eyebrow">Sauvegardes</div><p style="color:var(--ink2);font-size:14.5px;margin:0 0 10px">Une copie de secours dans ton iCloud, renouvelée chaque semaine, et une copie datée par jour dans l'app Fichiers (Sur mon iPhone, Brevet Quest). Restaurer ne remplace rien : la sauvegarde est fusionnée avec ta progression actuelle.</p><div id="sauvl">${sauvHtml()}</div></div>`:''}
+ ${CLOUD?`<div class="card"><div class="eyebrow">Sauvegardes</div><p style="color:var(--ink2);font-size:14.5px;margin:0 0 10px">Une copie datée par jour dans ton iCloud Drive (30 jours) et une copie de secours hebdomadaire dans iCloud : elles survivent à une réinstallation. Restaurer ne remplace rien : la sauvegarde est fusionnée avec ta progression actuelle.</p><div id="sauvl">${sauvHtml()}</div></div>`:''}
  <div class="card"><div class="eyebrow">Sauvegarde</div><p style="color:var(--ink2);font-size:14.5px;margin:0 0 10px">${CLOUD?'Ta progression se synchronise avec iCloud entre tes appareils. ':''}Exporte de temps en temps une copie texte dans une note : c'est ton filet de sécurité.</p><div class="alts"><button class="btn ghost" id="exp">Exporter</button><button class="btn ghost" id="imp">Importer</button><button class="btn red" id="reset">Réinitialiser</button></div></div>
  <details class="card fold"><summary>Sources officielles</summary><p style="color:var(--ink2);font-size:14px;margin:6px 0 8px">Application privée d'entraînement, sans lien avec la Confédération, l'ESTI, la Suva, la CFST ou l'AES. Les textes cités se consultent dans leur version officielle :</p><div style="display:flex;flex-direction:column;gap:8px;font-size:14.5px">${SOURCES.map(s=>`<a class="lnk" target="_blank" rel="noopener" href="${s[0]}">${s[1]}</a>`).join('')}</div></details>
  <details class="card fold"><summary>Erreurs récentes (${(S.err||[]).length})</summary>${(S.err||[]).length?`<div style="font-size:13.5px">${S.err.slice().reverse().map(e=>`<div class="qrow"><span>${esc(e.m)}<br><small style="color:var(--ink2)">${new Date(e.t).toLocaleString('fr-CH')} · ${esc(e.v||'')}${e.l?' · ligne '+e.l:''}</small></span></div>`).join('')}</div><button class="btn ghost sm" id="errclr" style="margin-top:8px">Effacer le journal</button>`:'<p class="eyebrow">Aucune erreur enregistrée.</p>'}</details>
@@ -1730,7 +1730,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v9"></script>
-<script src="acces.js?v=bq5-v9"></script>
+<script src="entrainement.js?v=bq5-v10"></script>
+<script src="acces.js?v=bq5-v10"></script>
 </body>
 </html>
