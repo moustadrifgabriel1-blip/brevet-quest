@@ -104,9 +104,24 @@ a[data-n]:hover{background:var(--tint)}
 .sess{display:flex;flex-direction:column;min-height:calc(100dvh - 40px - var(--sat) - var(--sab))}
 .sess .card{flex:1;display:flex;flex-direction:column;margin:8px 0}
 .shead{display:flex;align-items:center;gap:12px;padding:4px 0}.shead .ebar{flex:1;height:6px}.shead .cnt{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2);white-space:nowrap}
-.trous .rt{font-size:15px;font-weight:600;color:var(--ink2);margin:0 0 14px}.trous .phrase{font-size:calc(var(--fs) + 2px);line-height:1.75;text-align:left;margin:0 0 12px}.trous .phrase b{font-weight:700}
-.trou{display:inline-block;vertical-align:baseline;min-height:1.4em;line-height:1.3;margin:0 2px;padding:1px 7px;border-radius:7px 7px 3px 3px;background:var(--tint);box-shadow:inset 0 -2.5px 0 var(--accent);color:var(--accent2);font-weight:700;text-align:center}
+.trous .rt{font-size:15px;font-weight:600;color:var(--ink2);margin:0 0 16px}
+/* la phrase est un texte à lire, donc alignée à gauche, aérée, et jamais coupée par un trou :
+   interligne large pour que les pastilles ne se touchent pas d'une ligne à l'autre */
+.trous .phrase{font-size:calc(var(--fs) + 2px);line-height:2.05;text-align:left;margin:0 0 14px}.trous .phrase b{font-weight:700}
+/* Largeur fixe : la taille du trou ne doit rien dire de la longueur de la réponse. */
+.trou{display:inline-block;vertical-align:baseline;min-width:5.4em;min-height:1.5em;line-height:1.35;margin:0 3px;padding:1px 8px;border-radius:8px 8px 4px 4px;background:var(--tint);box-shadow:inset 0 -2.5px 0 var(--accent);color:var(--accent2);font-weight:700;text-align:center}
+.trou.num{min-width:3.6em}
+.trou .tn{display:inline-block;font-style:normal;font-size:11px;font-weight:700;line-height:15px;min-width:15px;height:15px;border-radius:50%;background:var(--accent);color:var(--bg);opacity:.85;vertical-align:2px;margin-right:2px}
 .trou.vu{min-width:0!important;background:var(--okbg);box-shadow:inset 0 -2.5px 0 var(--ok);color:var(--ink);animation:pop .3s both}
+.trou.vu .tn{display:none}
+.tw{white-space:nowrap}.tw .trou{margin-right:0}
+.trou .ta{margin-left:5px;font-weight:600}
+/* Rappel de ce qu'on cherche : le genre de chaque réponse, sans sa longueur. Chaque pastille
+   révèle son propre trou, ce qui donne une aide graduée avant de retourner la carte. */
+.tcue{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.tc{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 6px;border:1px solid var(--bord);border-radius:999px;background:var(--card);color:var(--ink2);font:inherit;font-size:13.5px;min-height:34px;cursor:pointer}
+.tc i{display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:700;width:19px;height:19px;border-radius:50%;background:var(--tint);color:var(--accent2)}
+.tc:disabled{cursor:default}.tc.vu{opacity:.45}.tc.vu i{background:var(--okbg);color:var(--ink)}
 .recto{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:16px 6px}.recto h2{font-size:26px;margin-bottom:10px}.recto .hint{color:var(--ink2);font-size:var(--fs)}
 .verso{border-top:1px dashed var(--line2);margin-top:14px;padding-top:14px;animation:pop .25s}
 .grades{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px;margin-top:14px}
@@ -275,7 +290,13 @@ body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
 /* bannière d'erreur : hors de #app */
 #errbar{position:fixed;left:12px;right:12px;top:calc(8px + var(--sat));z-index:75;background:#7a2222;color:#fff;border-radius:14px;padding:10px 12px 10px 14px;font-size:14px;line-height:1.4;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--sh2)}#errbar button{color:#fff;font-weight:700;min-height:32px;padding:0 6px;flex:none}
 .conf{display:flex;gap:6px;margin:0 0 12px}.conf button{flex:1;min-height:44px;border-radius:11px;font-size:14px;font-weight:600;background:var(--card2);color:var(--ink2);box-shadow:inset 0 0 0 1px var(--line)}.conf button[aria-pressed="true"]{background:var(--tint);color:var(--accent2);box-shadow:inset 0 0 0 1.5px var(--accent)}.conf button:disabled{opacity:.55}
-.chrono{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2);white-space:nowrap}.chrono.fin,.mono.fin{color:var(--bad)}
+.chrono{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2);white-space:nowrap}
+/* Le temps qui reste se lit d'un coup d'œil, sans compter : une jauge qui se vide, ambre au
+   dernier quart, rouge aux dix derniers pour cent. */
+.chrono.court{color:var(--gold)}.chrono.fin{color:var(--bad)}
+.tjauge{display:block;width:46px;height:4px;border-radius:2px;background:var(--bord);overflow:hidden;margin-top:3px}
+.tjauge i{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width .9s linear}
+.tjauge i.court{background:var(--gold)}.tjauge i.fin{background:var(--bad)}.chrono.fin,.mono.fin{color:var(--bad)}
 .grille{display:grid;gap:12px;margin-top:8px}.grille .cr{display:grid;gap:6px}.grille .cr>span{font-size:15px;line-height:1.4}.grille .pts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.grille .pts button{min-height:44px;border-radius:11px;font-weight:700;font-size:16px;background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}.grille .pts button[aria-pressed="true"]{background:var(--tint);color:var(--accent2);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .rep{margin:12px 0}.rep-l{display:flex;justify-content:space-between;gap:8px;font-size:14.5px;font-variant-numeric:tabular-nums}.rep-l small{color:var(--ink3);margin-left:4px}.rep-b{position:relative;height:10px;background:var(--line);border-radius:5px;margin-top:6px}.rep-b i{display:block;height:100%;border-radius:5px;background:var(--accent)}.rep-b em{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
 .tbl tr.risque td{background:var(--badbg)}
@@ -579,8 +600,15 @@ const QUESTS=[
  {id:'lien3',e:'link',t:'Suis 3 liens entre notes',n:3,k:'lien',r:20}];
 /* Trois quêtes par jour, tirées de façon stable à partir de la date : recharger l'app n'en change pas la liste. */
 function questsToday(){const t=today();if(S.quests.d!==t){const seed=dayN(t);const pool=QUESTS.map((q,i)=>{const v=Math.sin(seed*9301+i*49297)*233280;return{q,k:v-Math.floor(v)}}).sort((a,b)=>a.k-b.k);S.quests={d:t,bonus:false,l:pool.slice(0,3).map(x=>({id:x.q.id,p:0,c:false}))};save({ts:false})}return S.quests.l}
-function questAdd(k,v){v=v||1;let all=true;questsToday().forEach(x=>{const q=QUESTS.find(y=>y.id===x.id);if(!q)return;if(q.k===k&&!x.c){x.p=k==='combo'?Math.max(x.p,v):x.p+v;if(x.p>=q.n){x.p=q.n;x.c=true;S.coins+=q.r;toast(ic('check')+'Quête accomplie · +'+q.r+' pièces');SFX.coin()}}if(!x.c)all=false});
- if(all&&!S.quests.bonus){S.quests.bonus=true;S.coins+=50;celebrate({e:'medal',h:'Toutes les quêtes du jour !',p:'Trois sur trois. +50 pièces de bonus.',sound:'chest'})}}
+function questAdd(k,v){v=v||1;let all=true,bouge=false;
+ questsToday().forEach(x=>{const q=QUESTS.find(y=>y.id===x.id);
+  if(!q){all=false;return}                       /* quête inconnue : elle ne compte pas comme faite */
+  if(q.k===k&&!x.c){const p0=x.p;x.p=k==='combo'?Math.max(x.p,v):x.p+v;
+   if(x.p!==p0)bouge=true;
+   if(x.p>=q.n){x.p=q.n;x.c=true;S.coins+=q.r;toast(ic('check')+'Quête accomplie · +'+q.r+' pièces');SFX.coin()}}
+  if(!x.c)all=false});
+ if(all&&!S.quests.bonus){S.quests.bonus=true;S.coins+=50;bouge=true;celebrate({e:'medal',h:'Toutes les quêtes du jour !',p:'Trois sur trois. +50 pièces de bonus.',sound:'chest'})}
+ if(bouge)save()}
 function quetes(){const l=questsToday().map(x=>({x,q:QUESTS.find(y=>y.id===x.id)})).filter(z=>z.q);return `<div class="card" style="padding:12px 16px 10px"><div class="eyebrow">Quêtes du jour${S.quests.bonus?' · bonus récupéré':''}</div>${l.map(({x,q})=>`<button class="quest${x.c?' done':''}" data-qk="${q.k}" ${x.c?'disabled':''} aria-label="${esc(q.t)}${x.c?', accomplie':', lancer'}"><div class="e">${ic(q.e)}</div><div><div class="t">${q.t}</div><div class="bar"><i style="width:${x.p/q.n*100}%"></i></div></div><div class="r">${x.c?ic('check')+'+'+q.r:x.p+' / '+q.n+' · +'+q.r}${ic('coin')}</div></button>`).join('')}</div>`}
 /* Chaque quête est un raccourci : un toucher lance l'activité qui la fait avancer. */
 function raccourciQuete(k){const t=tN();
@@ -596,11 +624,15 @@ function raccourciQuete(k){const t=tN();
  lancerFile()}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-qk]');if(b&&!b.disabled){SFX&&SFX.tap&&SFX.tap();raccourciQuete(b.dataset.qk)}});
 /* Une réponse donnée : compteurs du jour, historique de la semaine, série, quêtes, objectif. */
+/* Tout ce qui suit la réponse est écrit tout de suite. Avant, journée, historique, série, XP,
+   pièces et quêtes ne vivaient qu'en mémoire : ils n'étaient enregistrés que si noter() passait
+   juste après. Une révision libre, une note lue ou un lien suivi les perdaient au rechargement. */
 function repondu(ok,q){newDay();S.day.n++;if(ok)S.day.ok++;const t=today();S.hist[t]=(typeof S.hist[t]==='number'?S.hist[t]:0)+1;touchStreak();questAdd('ans');if(ok){questAdd('ok');if(q&&q.t==='num')questAdd('num')}
- if(!S.day.goal&&S.day.n>=(S.goal||20)){S.day.goal=true;coffre()}}
+ if(!S.day.goal&&S.day.n>=(S.goal||20)){S.day.goal=true;coffre()}
+ save()}
 function coffre(){celebrate({e:'gift',h:'Objectif du jour atteint !',p:(S.goal||20)+' réponses aujourd\'hui. Un coffre t\'attend.',btn:'Ouvrir le coffre',sound:'win',conf:false,then:d=>{const r=Math.random();let e,h;if(r<.15&&(S.freeze||0)<2){S.freeze=(S.freeze||0)+1;e='snow';h='Un gel de série !'}else{const c=r<.7?10+Math.floor(Math.random()*21):40+Math.floor(Math.random()*21);S.coins+=c;e='coin';h='+'+c+' pièces !'}save();SFX.chest();hap('big');confetti(90);
  d.querySelector('.big').innerHTML=ic(e);d.querySelector('h2').textContent=h;d.querySelector('p').textContent=e==='snow'?'Il protège ta série un jour sans jouer. Tu en as '+S.freeze+'.':'À demain pour le prochain coffre.';d.querySelector('#cele-ok').textContent='Super';return true}})}
-function gainXP(n){if(!n)return;const before=rank().name;S.xp+=n;questAdd('xp',n);const a=rank();if(a.name!==before&&S.rankSeen!==a.name){S.rankSeen=a.name;celebrate({e:'medal',h:'Nouveau rang : '+a.name,p:a.nx?'Palier franchi. Le suivant, '+a.nx[1]+', est à '+(a.nx[0]-S.xp)+' XP.':'Rang maximum. Il n\'y a plus rien au-dessus.',sound:'up'})}}
+function gainXP(n){if(!n)return;const before=rank().name;S.xp+=n;questAdd('xp',n);save();const a=rank();if(a.name!==before&&S.rankSeen!==a.name){S.rankSeen=a.name;celebrate({e:'medal',h:'Nouveau rang : '+a.name,p:a.nx?'Palier franchi. Le suivant, '+a.nx[1]+', est à '+(a.nx[0]-S.xp)+' XP.':'Rang maximum. Il n\'y a plus rien au-dessus.',sound:'up'})}}
 function objectifLine(){const n=todayN(),g=S.goal||20;return `<div class="obj"><span>Objectif du jour</span><div class="bar"><i style="width:${Math.min(100,n/g*100)}%"></i></div><span class="mono">${Math.min(n,g)} / ${g}${n>=g?' ✓':''}</span></div>`}
 
 const fmtList=(p,wrap)=>{const re=/(^|[.:;,]\s)<b>(\d{1,2})<\/b>\s(?=(?!et\b|ou\b)[A-Za-zÀ-ÿ'’«]{2,})/g;const ms=[...p.matchAll(re)].filter(m=>+m[2]<=40);
@@ -679,30 +711,95 @@ function pointsCles(b){if(!b.k)return [];const ph=b.k.match(/[^.!?]+(?:[.!?]+|$)
  ph.forEach(s=>{buf+=s;if(plain(buf).length>=80){o.push(buf.trim());buf=''}});
  if(buf.trim()){if(o.length&&plain(buf).length<40)o[o.length-1]+=' '+buf.trim();else o.push(buf.trim())}
  while(o.length>4){const a=o.pop();o[o.length-1]+=' '+a}return o}
-/* Carte à trous tirée d'un point clé, comme dans Anki : on sait exactement quoi retrouver. On cache les termes
-   en gras ; à défaut, les nombres (trois au plus) ; à défaut, la fin de la phrase. R garde les réponses. */
-const NUMRE=/\d+(?:[’' .,]\d+)*(?:\s?(?:%|mm²|kVA|MVA|kV|kA|mA|kW|Hz|°C|ms|km|cm|mm|ans?|jours?|mois|heures?|francs|fois|[VAWsmhΩ])(?![\wÀ-ÿ]))?/g;
-function trous(txt){const t=String(txt).replace(/\[\[[^|\]]+\|([^\]]+)\]\]/g,'$1').replace(/\[\[([^\]]+)\]\]/g,'$1'),R=[],M='\u0000';
- /* le découpage en phrases peut couper un gras après son point final : balise orpheline tolérée des deux côtés */
- let mode='gras',h=t.replace(/^\s*<\/b>/,'').replace(/<b>([\s\S]*?)(?:<\/b>|$)/g,(m,a)=>{const v=plain(a),r=(v.match(/[.,;:!?]+$/)||[''])[0];if(!v.slice(0,v.length-r.length).trim())return a;R.push(v.slice(0,v.length-r.length));return M+(R.length-1)+M+r});
- if(!R.length){mode='nombre';h=t.split(/(<[^>]+>)/).map(seg=>seg[0]==='<'?seg:seg.replace(NUMRE,m=>{if(R.length>=3||!/\d/.test(m))return m;const v=m.replace(/[ .,]+$/,''),r=m.slice(v.length);R.push(v);return M+(R.length-1)+M+r})).join('')}
- if(!R.length){mode='suite';const w=plain(t).split(' '),g=trouSuite(w);if(!g)return {mode,R:[plain(t)],html:M+'0'+M};
-  const cache=w.slice(g[0],g[1]).join(' '),r=(cache.match(/[.,;:!?)]+$/)||[''])[0];R.push(cache.slice(0,cache.length-r.length));
-  h=esc(w.slice(0,g[0]).join(' '))+' '+M+'0'+M+esc(r)+(g[1]<w.length?' '+esc(w.slice(g[1]).join(' ')):'')}
- return {mode,R,html:h}}
-/* Fin de phrase : on cache le plus long groupe de mots après le verbe (2 à 8 mots, dont au moins deux
-   significatifs), sinon les 2 à 4 derniers mots significatifs. Jamais toute la fin : la vérification reste honnête. */
-const VERBE=/^(est|sont|a|ont|doit|doivent|peut|peuvent|permet|permettent|sert|servent|faut|reste|restent|donne|donnent|fixe|limite|limitent|protège|protègent|garantit|évite|évitent|vaut|valent|signifie|désigne|comprend|contient|dépend|devient|impose|exige|interdit|assure|assurent|indique|définit|correspond|provoque|augmente|diminue|remplace|relie|mesure|mesurent|prévoit|demande|oblige)$/i;
-const VIDE=/^(le|la|les|l'|un|une|des|du|de|d'|au|aux|à|en|et|ou|ni|par|pour|sur|dans|avec|sans|ce|cet|cette|ces|son|sa|ses|leur|leurs|qui|que|qu'|dont|où|il|elle|ils|elles|on|y|se|s'|ne|n'|pas|plus|très|tout|tous|toute|toutes|est|sont|car|mais|donc|si)$/i;
-function trouSuite(w){const nu=x=>x.replace(/[.,;:!?()«»"]+/g,''),sig=x=>!VIDE.test(nu(x))&&nu(x).replace(/[^\wÀ-ÿ]/g,'').length>1,cesure=/^(qui|que|qu'|et|ou|mais|car|donc|lorsque|quand|si|puis)$/i;
- const v=w.findIndex((x,k)=>k>0&&VERBE.test(nu(x)));let best=null;
- if(v>=0){let st=v+1;for(let k=v+1;k<=w.length;k++){if(k<w.length&&!/[,;:.!?)]$/.test(w[k-1])&&!cesure.test(w[k]))continue;
-   let x=st;while(x<k&&!sig(w[x]))x++;if(w.slice(x,k).filter(sig).length>=2&&k-x<=8&&x>=2&&(!best||k-x>best[1]-best[0]))best=[x,k];st=k}}
- if(best)return best;
- let b=w.length,x=b,n=0;while(x>0&&n<4&&b-x<6){x--;if(sig(w[x]))n++}while(x<b&&!sig(w[x]))x++;return n>=2&&x>=2?[x,b]:null}
-const trouHtml=c=>c.html.replace(/\u0000(\d+)\u0000/g,(m,k)=>`<span class="trou" data-t="${k}" style="min-width:${Math.min(11,Math.max(2.4,c.R[+k].length*.52)).toFixed(1)}em" aria-label="terme caché"></span>`);
+/* Lexique des notions : tout ce que les notes relient ou mettent en gras. Un mot seul n'y entre
+   que si deux notes au moins le marquent, sinon c'est une insistance de circonstance. */
+const VIDEL=/^(le|la|les|un|une|des|du|de|au|aux|en|et|ou|par|pour|sur|dans|avec|sans|ce|cette|ces|son|sa|ses|leur|leurs|qui|que|dont|où|il|elle|on|se|ne|pas|plus|très|tout|tous|toute|toutes|est|sont|car|mais|donc|si|entre|selon|comme|aussi|alors|chaque|même|faut|doit|peut|autre|autres|après|avant|projet|ouvrage|valeur|mesure|contrôle|essentiel|important)$/i;
+const LEXN={};
+NL.forEach(b=>{const t=[b.h,(b.p||[]).join(' '),b.k].join(' '),vu=new Set();
+ const add=x=>{const k=plain(x).toLowerCase().replace(/[.,;:!?]+$/,'').trim();if(k)vu.add(k)};
+ for(const m of t.matchAll(/\[\[[^|\]]+\|([^\]]+)\]\]/g))add(m[1]);
+ for(const m of t.matchAll(/<b>([^<]{3,40})<\/b>/g))add(m[1]);
+ vu.forEach(k=>LEXN[k]=(LEXN[k]||0)+1)});
+const LEXTROU=Object.keys(LEXN).filter(x=>x.length>=6&&!/\d/.test(x)&&!VIDEL.test(x)
+  &&x.split(' ').length<=4&&(x.split(' ').length>1||LEXN[x]>=2)).sort((a,b)=>b.length-a.length);
+/* Carte à trous tirée d'un point clé. Règles reprises de la pratique Anki et du principe
+   d'information minimale : on cache un élément court et précis, jamais une fin de phrase.
+   - la réponse tient en quatre mots au plus, deux caractères au moins ;
+   - trois trous au plus, et un seul si la réponse dépasse deux mots ;
+   - jamais de trou dans les deux premiers mots : il faut de quoi s'accrocher à gauche ;
+   - un nombre et son unité font un seul trou, « 300 à 500 ms » aussi ;
+   - on cache en priorité ce que l'auteur a marqué lui même : le gras et les notions reliées ;
+     à défaut un nombre ; à défaut un terme du lexique des notions, celui que le cerveau a
+     déjà retenu ailleurs, ce qui fait qu'une même notion se cache toujours de la même façon ;
+   - si rien de tout cela ne sort, la phrase ne fait pas une carte à trous.
+   R garde les réponses, K le genre de chacune : le joueur sait ce qu'il cherche. */
+const MAXMOTS=4, MAXTROUS=3, MARQ=String.fromCharCode(0);
+const MARQRE=new RegExp(MARQ+'(\\d+)'+MARQ,'g');
+const U="%|mm²|kVA|MVA|kV|kA|mA|kW|Hz|°C|ms|km|cm|mm|kg|ans?|jours?|mois|heures?|francs|CHF|fois|[VAWsmhΩ]";
+const N1="\\d+(?:[’' .,]\\d+)*(?:\\s?(?:"+U+")(?![\\wÀ-ÿ]))?";
+const NUMRE=new RegExp(N1+"(?:\\s?(?:à|ou|et|×|x)\\s?"+N1+")*","g");
+/* gras et notion reliée : les deux marquages que l'auteur a posés dans le texte */
+const MARQUE=/<b>([\s\S]*?)(?:<\/b>|$)|\[\[[^|\]]+\|([^\]]*?)\]\]/g;
+const VIDE=/^(le|la|les|l'|un|une|des|du|de|d'|au|aux|à|en|et|ou|ni|par|pour|sur|dans|avec|sans|ce|cet|cette|ces|son|sa|ses|leur|leurs|qui|que|qu'|dont|où|il|elle|ils|elles|on|y|se|s'|ne|n'|pas|plus|très|tout|tous|toute|toutes|est|sont|car|mais|donc|si|entre|selon|comme|aussi|alors|chaque|même|faut|doit|peut|autre|autres|celui|celle|après|avant|projet|ensuite|surtout|toujours|jamais)$/i;
+const nbMots=s=>plain(s).split(/\s+/).filter(Boolean).length;
+const bonTrou=s=>{const v=plain(s).trim();return v.length>1&&nbMots(v)<=MAXMOTS&&!VIDE.test(v)};
+/* le genre suit la réponse, pas le chemin qui l'a trouvée : « 85 % » reste une valeur */
+const genre=r=>/^[\d±−-]/.test(plain(r).trim())?'nombre':'terme';
+/* les balises retirées laissent des espaces parasites. On ne touche pas à l'espace qui précède
+   « : ; ! ? » » : en français il est correct, et l'enlever abîmerait la phrase. */
+const propre=s=>s.replace(/\s+([,.)])/g,'$1').replace(/(['’(«])\s+/g,'$1').replace(/\s{2,}/g,' ').trim();
+/* Un trou par élément marqué, dans l'ordre du texte. maxMots borne la taille des réponses :
+   on repasse à 2 quand un long groupe voisine des mots seuls, pour ne pas mélanger les genres. */
+function marqueTrous(t,maxMots){const R=[],K=[];
+ const h=t.replace(/^\s*<\/b>/,'').replace(MARQUE,(m,g,l,pos)=>{
+   const brut=g!==undefined?g:l, aff=g!==undefined?m.replace(/<\/?b>/g,''):brut;
+   const v=plain(brut),r=(v.match(/[.,;:!?]+$/)||[''])[0],rep=v.slice(0,v.length-r.length).trim();
+   if(!rep)return aff;
+   if(R.length>=MAXTROUS||!bonTrou(rep)||nbMots(rep)>maxMots)return aff;
+   if(nbMots(plain(t.slice(0,pos)))<2)return aff;
+   R.push(rep);K.push(genre(rep));return MARQ+(R.length-1)+MARQ+r});
+ return {R,K,h}}
+function trous(txt){const t=String(txt);
+ let g=marqueTrous(t,MAXMOTS);
+ if(g.R.length>1&&g.R.some(x=>nbMots(x)>2))g=marqueTrous(t,2);
+ if(g.R.length)return {mode:'marque',R:g.R,K:g.K,html:propre(g.h)};
+ const nu=propre(plain(t.replace(/\[\[[^|\]]+\|([^\]]+)\]\]/g,'$1')));
+ const R=[],K=[];
+ const h=nu.replace(NUMRE,(m,pos)=>{
+   if(R.length>=MAXTROUS||!/\d/.test(m))return m;
+   const v=m.replace(/[ .,]+$/,''),r=m.slice(v.length);
+   if(!bonTrou(v)||nbMots(nu.slice(0,pos))<2)return m;
+   R.push(v);K.push('nombre');return MARQ+(R.length-1)+MARQ+r});
+ if(R.length)return {mode:'nombre',R,K,html:h};
+ const s=trouLexique(nu);
+ if(!s)return null;
+ return {mode:'lexique',R:[s.rep],K:[genre(s.rep)],html:esc(s.avant)+MARQ+'0'+MARQ+esc(s.apres)}}
+/* Le plus long terme du lexique des notions présent dans la phrase, hors deux premiers mots.
+   Le lexique est celui que le cerveau a construit : ce sont les notions que les autres notes
+   mettent en avant, donc exactement ce qu'un candidat doit savoir restituer. */
+function trouLexique(p){const bas=p.toLowerCase();let best=null;
+ for(const terme of LEXTROU){const k=bas.indexOf(terme);if(k<0)continue;
+  if(k>0&&/[\wÀ-ÿ']/.test(bas[k-1]))continue;
+  const fin=k+terme.length;if(fin<bas.length&&/[\wÀ-ÿ]/.test(bas[fin]))continue;
+  if(nbMots(p.slice(0,k))<2)continue;
+  if(!best||terme.length>best.t.length)best={k,t:terme}}
+ if(!best)return null;
+ const rep=p.slice(best.k,best.k+best.t.length);
+ if(!bonTrou(rep))return null;
+ return {rep,avant:p.slice(0,best.k),apres:p.slice(best.k+best.t.length)}}
+/* Chaque trou porte son numéro, jamais sa longueur : une largeur qui suit la réponse la donnerait
+   à moitié. Le rappel sous la phrase dit ce qu'on cherche et révèle un trou à la fois. */
+/* le trou et la ponctuation qui le suit restent sur la même ligne : une virgule seule en début
+   de ligne, ou un point détaché du mot, casse la lecture de la phrase */
+const trouHtml=c=>c.html.replace(new RegExp(MARQ+'(\\d+)'+MARQ+'([.,;:!?)]*)','g'),(m,k,pon)=>`<span class="tw"><span class="trou${c.K[+k]==='nombre'?' num':''}" data-t="${k}" aria-label="Trou ${+k+1}, ${c.K[+k]==='nombre'?'une valeur':'un terme'}, à retrouver"><i class="tn">${+k+1}</i></span>${esc(pon)}</span>`);
+const trouCue=c=>`<div class="tcue">${c.R.map((r,k)=>`<button type="button" class="tc" data-c="${k}"><i>${k+1}</i>${c.K[k]==='nombre'?'valeur':'terme'}</button>`).join('')}</div>`;
 const KBYNOTE={};
-NL.forEach(b=>{KBYNOTE[b.id]=pointsCles(b).map((t,i)=>{const x={id:'k-'+b.id+'-'+i,kind:'k',li:b.li,b,txt:t,i,n:0};ITEM[x.id]=x;return x});KBYNOTE[b.id].forEach(x=>x.n=KBYNOTE[b.id].length)});
+/* Un point clé dont on ne sait pas tirer un trou honnête ne devient pas une carte : le contenu
+   reste couvert par le rappel libre de la note. L'indice i garde la place d'origine du point clé,
+   pour que l'identifiant d'une carte ne bouge pas quand une voisine disparaît. */
+NL.forEach(b=>{KBYNOTE[b.id]=pointsCles(b).map((t,i)=>({t,i,tr:trous(t)})).filter(o=>o.tr)
+  .map(({t,i,tr})=>{const x={id:'k-'+b.id+'-'+i,kind:'k',li:b.li,b,txt:t,tr,i,n:0};ITEM[x.id]=x;return x});
+ KBYNOTE[b.id].forEach((x,k)=>{x.n=KBYNOTE[b.id].length;x.rang=k})});
 const TOTALK=Object.values(KBYNOTE).reduce((a,l)=>a+l.length,0);
 /* Toutes les cartes d'une note, dans l'ordre d'apprentissage : points clés, puis questions. */
 const cartesNote=id=>(KBYNOTE[id]||[]).concat(QBYNOTE[id]||[]);
@@ -777,7 +874,10 @@ const ECRANS={auj:()=>aujourdhui(),rev:()=>reviserHub(),cerv:()=>cerveau(),stat:
 function tabs(){const nd=dues().length;$('#tabs').innerHTML='<div class="brand">Brevet Quest</div>'+TABS.map(t=>`<button class="${TAB===t[0]?'on':''}" data-t="${t[0]}" aria-current="${TAB===t[0]?'page':'false'}"><b>${ic(t[1])}</b>${t[2]}${t[0]==='rev'&&nd?'<i class="dot" aria-label="cartes dues"></i>':''}</button>`).join('');
  $('#tabs').querySelectorAll('button[data-t]').forEach(b=>b.onclick=()=>{if(b.dataset.t==='cerv'&&TAB==='cerv'&&!document.body.classList.contains('focus')&&typeof cvReset==='function')cvReset();go(b.dataset.t)})}
 /* Change d'onglet : ferme le panneau, quitte le mode plein écran, rend l'écran. */
-function go(t){TAB=t;fermerPanneau();document.body.classList.remove('focus');stopGraphe();tabs();window.scrollTo(0,0);ECRANS[t]()}
+/* Chrono de la séance en cours, au plus un : voir reviser(). */
+let CHRONO=0;
+function stopChrono(){if(CHRONO){clearInterval(CHRONO);CHRONO=0}}
+function go(t){TAB=t;fermerPanneau();document.body.classList.remove('focus');stopChrono();stopGraphe();tabs();window.scrollTo(0,0);ECRANS[t]()}
 /* Rafraîchit l'écran courant (après un état iCloud reçu, par exemple) sans casser une session. */
 function rafraichir(){if(document.body.classList.contains('focus')||G3)return;tabs();ECRANS[TAB]()}
 function hud(){const r=rank();return `<div class="top"><div class="xp"><div class="lbl"><span>${r.name}</span><span>${r.nx?r.nx[0]-S.xp+' XP avant '+r.nx[1]:'Rang maximum'}</span></div><div class="bar"><i style="width:${r.pct}%"></i></div></div><span class="pill" title="Pièces">${ic('coin')}${S.coins}</span><span class="pill fire${S.streak.last===today()?' lit':''}" title="Série">${ic('flame')}${streakNow()}</span></div>`}
@@ -879,10 +979,24 @@ function leech(x){const r=S.sr[x.id];return r&&r.f>=3?`<button class="btn ghost 
 const NOMS={1:'À revoir',2:'Difficile',3:'Bien',4:'Facile'};
 const ivJours=d=>d<=0?'aujourd\'hui':d===1?'demain':d<30?d+' j':d<365?Math.round(d/30.4)+' mois':Math.round(d/365)+' an';
 const ivTxt=(id,g)=>{const t=tN();return ivJours(FSRS.review(S.sr[id],g,t,{fuzz:false,id,ret:retDe(id)}).due-t)};
-/* Une révision : FSRS, compteur de nouvelles du jour, rétention observée (cartes déjà vues seulement). */
+/* Une révision : FSRS, compteur de nouvelles du jour, rétention observée (cartes déjà vues seulement).
+
+   RÈGLE QUI PRIME SUR FSRS, et qui vaut pour TOUTES les portes d'entrée (séance du jour, note,
+   chapitre, cerveau 3D, points fragiles, examen blanc) : une carte revue AVANT son échéance garde
+   son échéance. Réussie, elle peut être repoussée plus loin, jamais rapprochée. Ratée, elle reste
+   à sa date : un examen blanc ou une relecture ne doivent pas démolir un planning construit sur
+   des semaines. La stabilité et la difficulté, elles, sont bien mises à jour dans les deux cas :
+   la révision compte, c'est seulement la date qui est protégée.
+   L'échec est enregistré (f) et la carte est proposée en fin de séance : c'est Gab qui décide de
+   la ramener, avec « Ramener à demain ». Une carte réellement due, elle, suit FSRS sans réserve. */
 function noter(id,g){const avant=S.sr[id];newDay();
  if(!avant)S.day.nw=(S.day.nw||0)+1;else{const k=today(),r=S.ret[k]||[0,0];r[1]++;if(g>1)r[0]++;S.ret[k]=r}
- S.sr[id]=FSRS.review(avant,g,tN(),{id,ret:retDe(id)});save()}
+ const t=tN(),apres=FSRS.review(avant,g,t,{id,ret:retDe(id)});
+ const enAvance=!!avant&&avant.due>t;
+ if(enAvance&&apres.due<avant.due)apres.due=avant.due;
+ S.sr[id]=apres;save();return enAvance}
+/* Ramener une carte à demain, à la demande : le seul chemin qui raccourcit une échéance. */
+function ramener(ids){const t=tN();ids.forEach(id=>{const r=S.sr[id];if(r&&r.due>t+1)r.due=t+1});save()}
 const gradeBtns=(id,gs)=>`<div class="grades">${gs.map(g=>`<button class="g${g}" data-g="${g}">${NOMS[g]}<small>${ivTxt(id,g)}</small></button>`).join('')}</div>`;
 
 /* ===================== SESSION : UNE CARTE PLEIN ÉCRAN ===================== */
@@ -890,31 +1004,55 @@ const gradeBtns=(id,gs)=>`<div class="grades">${gs.map(g=>`<button class="g${g}"
 const CONFT=/^(qcm|vf|num)$/;
 const CONFH=`<div class="conf" role="group" aria-label="Ta confiance avant de répondre, facultatif"><button data-cf="sais" aria-pressed="false">Je sais</button><button data-cf="hesite" aria-pressed="false">J'hésite</button><button data-cf="devine" aria-pressed="false">Je devine</button></div>`;
 /* o.titre, o.examen (note automatique 3 ou 1, résultat journalisé dans S.log), o.epr, o.retour. */
+/* o.libre : révision hors planning, demandée à la main (une note, un chapitre déjà à jour).
+   Rien n'est écrit dans FSRS : relire ne doit ni avancer ni reculer une échéance. */
 function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length){toast(ic('check')+'Aucune carte à montrer');return}
  fermerPanneau();document.body.classList.add('focus');tabs();
  let i=0,xp=0,nok=0,combo=0;const miss=[],titre=o.titre||'Révision',retour=o.retour||TAB;
  /* examen chronométré : o.min minutes pour toute la liste, les questions non faites comptent fausses */
- const N0=list.length,T0=Date.now(),FIN=o.min?T0+o.min*6e4:0;let chrono=0;
+ const N0=list.length;let T0=Date.now(),FIN=o.min?T0+o.min*6e4:0;
+ /* Le chrono vit au dessus de la séance : quitter par la croix, par un onglet ou par n'importe
+    quel autre chemin doit l'arrêter. Sinon un examen abandonné se réveille plus tard et écrit
+    son bilan par dessus l'écran en cours. */
+ stopChrono();let chrono=0;
  const restant=()=>{const s=Math.max(0,Math.ceil((FIN-Date.now())/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
  /* Une carte ratée revient dans la même séance, 3 à 6 cartes plus loin : c'est là que la reprise
     paie le plus. Une seule fois, sinon une mauvaise passe transformerait la séance en boucle.
     Son échéance FSRS (demain) reste inchangée. */
+ /* cartes ratées alors qu'elles n'étaient pas encore dues : leur échéance a été protégée,
+    on le dit au bilan et on laisse Gab décider de les ramener. */
+ const protege=[];
  const rejoue={};
  const rejouer=x=>{if(o.examen||rejoue[x.id])return;rejoue[x.id]=1;list.splice(Math.min(list.length,i+3+Math.floor(Math.random()*4)),0,x.id)};
- const head=()=>`<div class="shead"><button class="back" id="squit" aria-label="Quitter la session">${ic('x')}</button><div class="ebar" role="progressbar" aria-valuemin="0" aria-valuemax="${list.length}" aria-valuenow="${i}"><i style="width:${i/list.length*100}%"></i></div><span class="cnt">${i+1} / ${list.length}</span>${FIN?`<span class="chrono${FIN-Date.now()<6e4?' fin':''}" id="chr" role="timer" aria-label="Temps restant">${restant()}</span>`:''}</div>`;
+ /* Une carte qui revient dans la séance est annoncée comme telle : sans cela, la file passe de
+    60 à 63 cartes sans explication et on croit à un doublon. */
+ const estReprise=()=>!!rejoue[list[i]]&&list.indexOf(list[i])<i;
+ const head=()=>`<div class="shead"><button class="back" id="squit" aria-label="Quitter la session">${ic('x')}</button><div class="ebar" role="progressbar" aria-valuemin="0" aria-valuemax="${list.length}" aria-valuenow="${i}"><i style="width:${i/list.length*100}%"></i></div><span class="cnt">${i+1} / ${list.length}</span>${FIN?`<span class="chrono${FIN-Date.now()<6e4?' fin':''}" id="chr" role="timer" aria-label="Temps restant">${restant()}</span><span class="tjauge" aria-hidden="true"><i id="tji" style="width:${Math.max(0,Math.min(100,(FIN-Date.now())/(o.min*6e4)*100))}%"></i></span>`:''}</div>`;
  const suivant=()=>{i++;i<list.length?show():bilan()};
  const gagne=n=>{xp+=n;gainXP(n)};
  const show=()=>{const x=ITEM[list[i]],t0=Date.now(),r0=S.sr[x.id];
-  if(x.kind==='k'){const TR=trous(x.txt);
-   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · carte ${ETAT[etat(r0)]}</span><span>point clé ${x.i+1} / ${x.n} · ch. ${x.li}</span></div>
-   <div class="recto trous"><div class="rt">${x.b.h}</div><p class="phrase">${trouHtml(TR)}</p><div class="hint">${TR.mode==='suite'?'Retrouve le groupe de mots caché à voix haute, puis retourne.':'Trouve '+(TR.R.length>1?'les '+TR.R.length+' termes cachés':'le terme caché')+' à voix haute, puis retourne.'}</div></div><div id="verso"></div>
+  if(x.kind==='k'){const TR=x.tr,un=TR.R.length===1;
+   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>point clé ${x.rang+1} / ${x.n} · ch. ${x.li}</span></div>
+   <div class="recto trous"><div class="rt">${x.b.h}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche une pastille pour n'en révéler qu'une.</div></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn ghost sm" id="indice">${ic('info')}Indice</button><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();
-   /* indice : la première lettre (ou le premier mot pour une fin de phrase) de chaque trou */
-   $('#indice').onclick=()=>{app.querySelectorAll('.trou:not(.vu)').forEach(e=>{const r=TR.R[+e.dataset.t];e.textContent=(TR.mode==='suite'?r.split(' ')[0]:r.slice(0,1))+' …'});$('#indice').disabled=true};
-   $('#flip').onclick=()=>{app.querySelectorAll('.trou').forEach((e,k)=>{e.textContent=TR.R[+e.dataset.t];e.classList.add('vu');e.style.animationDelay=k*70+'ms';e.removeAttribute('aria-label')});$('#verso').innerHTML=`${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>`;
+   /* révéler un seul trou : la pastille de rappel sert d'aide graduée avant de retourner */
+   const ouvrir=k=>{const e=app.querySelector('.trou[data-t="'+k+'"]');if(!e||e.classList.contains('vu'))return;
+    e.textContent=TR.R[k];e.classList.add('vu');e.removeAttribute('aria-label');
+    const c=app.querySelector('.tc[data-c="'+k+'"]');if(c){c.classList.add('vu');c.disabled=true}};
+   app.querySelectorAll('.tc').forEach(b=>b.onclick=()=>ouvrir(+b.dataset.c));
+   /* indice : la première lettre d'un terme, l'unité d'une valeur. Donner le premier chiffre
+      d'un nombre reviendrait à donner la réponse. */
+   $('#indice').onclick=()=>{app.querySelectorAll('.trou:not(.vu)').forEach(e=>{const t=+e.dataset.t,r=TR.R[t];
+     /* valeur : son unité si elle en a une, sinon le nombre de chiffres. Le premier chiffre
+        d'un nombre court reviendrait à donner la réponse. */
+     const u=r.replace(/^[\d\s’',.×x±−-]+/,'').trim(),nb=(r.match(/\d/g)||[]).length;
+     const aide=TR.K[t]==='nombre'?(u?'… '+esc(u):nb+' chiffre'+(nb>1?'s':'')):esc(r.slice(0,1))+' …';
+     e.innerHTML=`<i class="tn">${t+1}</i><span class="ta">${aide}</span>`});$('#indice').disabled=true};
+   $('#flip').onclick=()=>{app.querySelectorAll('.trou').forEach((e,k)=>{e.textContent=TR.R[+e.dataset.t];e.classList.add('vu');e.style.animationDelay=k*70+'ms';e.removeAttribute('aria-label')});
+    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
-    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;noter(x.id,g);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
+    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
   const q=x.q;let body='',st={};
   if(q.t==='qcm')body=`<div class="opts">${shuffle(q.c.map((c,k)=>k)).map((k,p)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[p]}</span>${q.c[k]}</button>`).join('')}</div>`;
@@ -922,7 +1060,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off" aria-label="Ta réponse"><span class="u">${q.u||''}</span><button class="btn" id="val">OK</button></div>`;
   if(q.t==='order'){st.items=shuffle(q.i);st.pick=[];body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche les étapes dans le bon ordre. Touche une étape numérotée pour la retirer.</p><div class="opts order" id="ord"></div><div class="ordact"><button class="btn ghost sm" id="oclr" disabled>${ic('x')}Tout effacer</button><button class="btn sm" id="oval" disabled>${ic('check')}Valider</button></div>`}
   if(q.t==='match'){st.l=shuffle(q.p.map(p=>p[0]));st.r=shuffle(q.p.map(p=>p[1]));st.sel=null;st.pairs={};body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche un terme, puis sa définition. Touche une paire faite pour la défaire.</p><div class="match" id="mt"></div><div class="ordact"><button class="btn ghost sm" id="oclr" disabled>${ic('x')}Tout effacer</button><button class="btn sm" id="oval" disabled>${ic('check')}Valider</button></div>`}
-  app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.examen?(o.support?' · '+o.support:''):' · '+ETAT[etat(r0)]}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div><div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}<div id="fb"></div></div></div>`;
+  app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.examen?(o.support?' · '+o.support:''):' · '+(estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)])}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div><div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}<div id="fb"></div></div></div>`;
   $('#squit').onclick=()=>fin();
   let fait=false,cf=null;
   /* confiance avant la réponse : un toucher, facultatif, retouché pour l'enlever */
@@ -931,11 +1069,11 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
    app.querySelectorAll('.opt,#val,#nin,#oval,#oclr,.conf button').forEach(b=>b.disabled=true);
    const ex=extra&&extra[0]==='<'?extra:'',tx=extra&&extra[0]!=='<'?' · '+extra:'';
    let act='';
-   if(o.examen||!ok){noter(x.id,ok?3:1);act=`<div class="nav" style="justify-content:flex-end"><button class="btn" id="nx">${i<list.length-1?'Suivant':'Bilan'}${ic('chevR')}</button></div>`}
+   if(o.examen||!ok){const av=o.libre?false:noter(x.id,ok?3:1);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);act=`<div class="nav" style="justify-content:flex-end"><button class="btn" id="nx">${i<list.length-1?'Suivant':'Bilan'}${ic('chevR')}</button></div>`}
    else act=gradeBtns(x.id,dt<8?[2,3,4]:[2,3])+(dt<8?`<p class="fast">Réponse en ${Math.max(1,Math.round(dt))} s : Facile est proposé.</p>`:'');
    $('#fb').innerHTML=`<div class="fb${ok?' ok':''}"><b>${ok?'Exact · +6 XP':'Raté'+tx}</b>${ex}<div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${ok?'':leech(x)}</div>${act}`;
    const nb=$('#nx');if(nb)nb.onclick=suivant;
-   app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{noter(x.id,+b.dataset.g);suivant()});
+   app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g;const av=o.libre?false:noter(x.id,g);if(av&&g===1&&protege.indexOf(x.id)<0)protege.push(x.id);suivant()});
    const fbx=$('#fb');fbx&&fbx.scrollIntoView({block:'nearest',behavior:'smooth'})};
   if(q.t==='qcm'||q.t==='vf')app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const k=+b.dataset.k,ok=q.t==='qcm'?k===q.a:(k===1)===q.a;b.classList.add(ok?'ok':'ko');if(!ok){const r=q.t==='qcm'?q.a:(q.a?1:0);const c=app.querySelector(`.opt[data-k="${r}"]`);c&&c.classList.add('ok')}answer(ok)});
   if(q.t==='num'){const go_=()=>{const v=parseFloat($('#nin').value.replace(',','.'));if(isNaN(v))return;const ok=!q.tol?v===q.a:Math.abs(v-q.a)/Math.abs(q.a)*100<=q.tol;answer(ok,ok?'':'Attendu : '+fmt(q.a)+' '+(q.u||'')+(aide(x.li)!=='coeur'?'. Le chiffre ne se retient pas, la méthode oui.':'. Sans support à l\'examen : la formule se retient.'))};$('#val').onclick=go_;$('#nin').onkeydown=e=>{if(e.key==='Enter')go_()}}
@@ -955,16 +1093,35 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   $('#oclr').onclick=()=>{if(fait)return;st.pairs={};st.sel=null;draw()};
   $('#oval').onclick=()=>{if(fait||Object.keys(st.pairs).length<q.p.length)return;const ok=q.p.every(p=>st.r[st.pairs[p[0]]]===p[1]);answer(ok,ok?'':'<span class="fbt">Bonnes paires</span><ul class="fbo">'+q.p.map(p=>'<li><b>'+p[0]+'</b> : '+p[1]+'</li>').join('')+'</ul>')};draw()}};
  /* Quitter en cours : tout ce qui a été noté est déjà sauvegardé. */
- const fin=()=>{if(i>0)bilan();else{document.body.classList.remove('focus');go(retour)}};
- const bilan=()=>{clearInterval(chrono);chrono=0;document.body.classList.remove('focus');fermerPanneau();const n=Math.min(i+1,list.length),vus=i>=list.length?list.length:i;const tot=Math.max(1,FIN?N0:vus),pct=Math.round(nok/tot*100),n6=Math.round((1+5*nok/tot)*10)/10;
+ const fin=()=>{if(i>0)bilan();else{stopChrono();document.body.classList.remove('focus');go(retour)}};
+ const bilan=()=>{stopChrono();chrono=0;document.body.classList.remove('focus');fermerPanneau();const n=Math.min(i+1,list.length),vus=i>=list.length?list.length:i;const tot=Math.max(1,FIN?N0:vus),pct=Math.round(nok/tot*100),n6=Math.round((1+5*nok/tot)*10)/10;
   S.coins+=nok;if(vus>=Math.min(5,list.length))questAdd('rev');
   if(o.examen)S.log=(S.log||[]).concat([{d:today(),t:titre,e:o.epr==null?-1:o.epr,n:nok,tot:FIN?N0:vus,f:FIN?1:0}]).slice(-100);
   save();pushRappels();tabs();
-  app.innerHTML=hud()+`<div class="card res"><div class="big">${pct>=80?ic('brain'):pct>=50?ic('trend'):ic('refresh')}</div><h2>${esc(titre)}</h2><p>${nok} / ${FIN?N0:vus} · ${pct} %</p>${o.examen?`<p id="note6">Note <b class="gnote ${clsNote(n6)}">${fmt1(n6)}</b> / 6${FIN?' · '+Math.max(1,Math.round((Date.now()-T0)/6e4))+' min sur '+o.min:''}</p>`:''}<div class="gain"><span class="pill">+<span class="count" data-to="${xp}">0</span> XP</span><span class="pill">${ic('coin')}+<span class="count" data-to="${nok}">0</span></span></div>${objectifLine()}
-  ${miss.length?`<div class="miss"><div class="eyebrow">À revoir demain</div>${[...new Set(miss)].map(x=>`<div><b>${x.kind==='k'?x.b.h:fx(x.q.q)}</b>${x.kind==='k'?fmtKey(x.txt):fx(x.q.e)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button></div>`).join('')}</div>`:(vus?'<p>Sans faute. Les intervalles s\'allongent.</p>':'')}
+  app.innerHTML=hud()+`<div class="card res"><div class="big">${pct>=80?ic('brain'):pct>=50?ic('trend'):ic('refresh')}</div><h2>${esc(titre)}</h2><p>${nok} / ${FIN?N0:vus} · ${pct} %</p>${FIN&&N0>vus?`<p class="eyebrow">${N0-vus} question${N0-vus>1?'s':''} non répondue${N0-vus>1?'s':''}, comptée${N0-vus>1?'s':''} fausse${N0-vus>1?'s':''} : le temps t'a manqué.</p>`:''}${o.examen?`<p id="note6">Note <b class="gnote ${clsNote(n6)}">${fmt1(n6)}</b> / 6${FIN?' · '+Math.max(1,Math.round((Date.now()-T0)/6e4))+' min sur '+o.min:''}</p>`:''}<div class="gain"><span class="pill">+<span class="count" data-to="${xp}">0</span> XP</span><span class="pill">${ic('coin')}+<span class="count" data-to="${nok}">0</span></span></div>${objectifLine()}
+  ${miss.length?`<div class="miss"><div class="eyebrow">${protege.length>=[...new Set(miss)].length?'Tes erreurs':'À revoir demain'}</div>${[...new Set(miss)].map(x=>`<div><b>${x.kind==='k'?x.b.h:fx(x.q.q)}</b>${x.kind==='k'?fmtKey(x.txt):fx(x.q.e)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button></div>`).join('')}</div>`:(vus?'<p>Sans faute. Les intervalles s\'allongent.</p>':'')}
+  ${protege.length?`<div class="fb"><b>${protege.length} carte${protege.length>1?'s':''} ratée${protege.length>1?'s':''} mais pas encore due${protege.length>1?'s':''}</b><div>Leur date n'a pas bougé : une séance en avance ne défait pas ton planning. À toi de voir.</div><button class="btn ghost sm" id="ramener" style="margin-top:10px">${ic('refresh')}Les ramener à demain</button></div>`:''}
   <div class="nav" style="justify-content:center"><button class="btn" id="ok">Retour</button></div></div>`;
-  $('#ok').onclick=()=>go(retour);if(pct>=80&&vus){SFX.win();hap('win');if(pct===100&&vus>=5)confetti(100)}else SFX.ok();animRes(0);flushCele()};
- if(FIN)chrono=setInterval(()=>{const e=$('#chr');if(e){e.textContent=restant();e.classList.toggle('fin',FIN-Date.now()<6e4)}if(Date.now()>=FIN){clearInterval(chrono);chrono=0;toast(ic('clock')+'Temps écoulé');bilan()}},1000);
+  $('#ok').onclick=()=>go(retour);
+  const rb=$('#ramener');if(rb)rb.onclick=()=>{ramener(protege);rb.disabled=true;rb.textContent='Ramenées à demain';tabs()};
+  if(pct>=80&&vus){SFX.win();hap('win');if(pct===100&&vus>=5)confetti(100)}else SFX.ok();animRes(0);flushCele()};
+ const partirChrono=()=>{if(!o.min)return;T0=Date.now();FIN=T0+o.min*6e4;lancerTic()};
+ const lancerTic=()=>{stopChrono();chrono=CHRONO=setInterval(()=>{const e=$('#chr');const part=Math.max(0,(FIN-Date.now())/(o.min*6e4));
+  if(e){e.textContent=restant();e.classList.toggle('fin',part<=.1);e.classList.toggle('court',part>.1&&part<=.25)}
+  const ji=$('#tji');if(ji){ji.style.width=(part*100).toFixed(1)+'%';ji.className=part<=.1?'fin':part<=.25?'court':''}if(Date.now()>=FIN){stopChrono();chrono=0;toast(ic('clock')+'Temps écoulé');bilan()}},1000)};
+ /* Un examen chronométré s'ouvre sur son cadre : format, durée, support autorisé. Le chrono ne
+    part qu'au « Commencer », comme le jour de l'épreuve, et pas pendant qu'on lit la consigne. */
+ if(FIN){const f=EPR[o.epr]&&o.epr>=0?EPR[o.epr]:null;
+  app.innerHTML=`<div class="sess"><div class="card res"><div class="big">${ic('clock')}</div>
+   <h2>${esc(titre)}</h2>
+   <p>${N0} questions · ${o.min} minutes · ${esc(o.support||'sans support')}</p>
+   ${f?`<p class="eyebrow" style="margin-top:8px">Le jour de l'examen : ${esc(f.d)}</p>`:''}
+   <p style="font-size:14.5px;margin-top:10px">Le chrono part quand tu touches Commencer. À la fin du temps, les questions non répondues comptent fausses, comme à l'examen.</p>
+   <div class="nav" style="justify-content:center;gap:10px"><button class="btn ghost" id="xquit">Retour</button><button class="btn" id="xgo">${ic('check')}Commencer</button></div></div></div>`;
+  document.body.classList.add('focus');
+  $('#xquit').onclick=()=>{document.body.classList.remove('focus');go(retour)};
+  $('#xgo').onclick=()=>{partirChrono();show()};
+  return}
  show()}
 function animRes(){app.querySelectorAll('.count').forEach(el=>countUp(el,+el.dataset.to))}
 
@@ -1149,7 +1306,9 @@ function cvChap(){const li=CV.id,l=L[li];if(!l){cvRetour();return}const cs=carte
  <h2 class="sec">Notes</h2><div class="list">${l.b.map(b=>{const pp=progres(cartesNote(b.id));return `<button data-n="${b.id}"><span>${b.h}<small>${pp.v} / ${pp.t} cartes vues · ${pl((b.liens||[]).length,'lien')} · ${pl((BACK[b.id]||[]).length,'rétrolien')}</small></span></button>`}).join('')}</div>
  ${(l.voisins||[]).length?`<h2 class="sec" style="font-size:17px">Chapitres voisins</h2><div class="chips">${l.voisins.map(v=>`<button class="chip" data-vch="${v}">ch. ${v} · ${esc(L[v].t)}</button>`).join('')}</div>`:''}`;
  bindBack();app.querySelectorAll('[data-vch]').forEach(b=>b.onclick=()=>cvAller({v:'ch',id:+b.dataset.vch}));
- $('#apch').onclick=()=>{const nv=cs.filter(x=>!S.sr[x.id]),vu=cs.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=tN());reviser(nv.concat(vu).slice(0,30).map(x=>x.id).concat(nv.length||vu.length?[]:shuffle(cs).slice(0,15).map(x=>x.id)),{titre:'Chapitre '+li})}}
+ $('#apch').onclick=()=>{const nv=cs.filter(x=>!S.sr[x.id]),vu=cs.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=tN()),du=nv.concat(vu);
+  du.length?reviser(du.slice(0,30).map(x=>x.id),{titre:'Chapitre '+li})
+           :reviser(shuffle(cs).slice(0,15).map(x=>x.id),{titre:'Chapitre '+li,libre:true})}}
 
 /* --- page de note --- */
 function cvNote(){const b=NOTES[CV.id];if(!b){cvRetour();return}const id=b.id,cs=cartesNote(id),back=BACK[id]||[];
@@ -1165,7 +1324,9 @@ function cvNote(){const b=NOTES[CV.id];if(!b){cvRetour();return}const id=b.id,cs
  <h3>${ic('edit')}Ma note</h3><textarea class="mine" id="mine" placeholder="Tes mots à toi, un exemple du terrain, un moyen mnémotechnique…" aria-label="Ma note personnelle">${esc(S.notes[id]||'')}</textarea><div class="saved" id="saved"></div></div>`;
  render(Math.min(CV.page||0,notePages(b).length-1));if(notePages(b).length===1)questAdd('brief');
  bindBack();app.querySelectorAll('[data-vch]').forEach(x=>x.onclick=()=>cvAller({v:'ch',id:+x.dataset.vch}));
- $('#apn').onclick=()=>{const nv=cs.filter(x=>!S.sr[x.id]),vu=cs.filter(x=>S.sr[x.id]);reviser(nv.concat(vu).map(x=>x.id),{titre:'Note · '+plain(b.h)})};
+ $('#apn').onclick=()=>{const nv=cs.filter(x=>!S.sr[x.id]),du=cs.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=tN()),l=nv.concat(du);
+  l.length?reviser(l.map(x=>x.id),{titre:'Note · '+plain(b.h)})
+          :reviser(cs.map(x=>x.id),{titre:'Note · '+plain(b.h),libre:true})};
  const ta=$('#mine');let tm=null;ta.oninput=()=>{clearTimeout(tm);tm=setTimeout(()=>{const v=ta.value;S.notesTs=S.notesTs||{};if(v.trim()){S.notes[id]=v;S.notesTs[id]=Date.now()}else{delete S.notes[id];delete S.notesTs[id]}save();const s=$('#saved');if(s)s.textContent='Enregistré'+(CLOUD?', synchronisé avec iCloud':'')+'.'},500)};flushCele()}
 
 /* --- graphe des notions en 2D : canvas, forces simples, arrêt à la convergence.
@@ -1412,7 +1573,7 @@ function monter3D(T,jeton){
  const LAT=matchMedia('(min-width: 900px)');
  const zone=()=>{const top=lay.classList.contains('fo')&&!LAT.matches?lay.querySelector('.c3top').offsetHeight+6:lay.querySelector('.c3row').offsetTop+50;let bot=H-TB,right=W;
   if(!fi.hidden){if(LAT.matches){right=fi.offsetLeft;lay.style.setProperty('--fw',fi.offsetWidth+'px')}else bot=fi.offsetTop}
-  U={x:0,y:top,w:Math.max(80,right),h:Math.max(80,bot-top)};OFFT.x=W/2-(U.x+U.w/2);OFFT.y=H/2-(U.y+U.h/2);demande()};
+  U={x:0,y:top,w:Math.max(80,right),h:Math.max(80,bot-top)};OFFT.x=W/2-(U.x+U.w/2);OFFT.y=H/2-(U.y+U.h/2);UIB=null;demande()};
  const mesurer=()=>{const r=lay.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);const tb=$('#tabs'),tr=tb&&getComputedStyle(tb).display!=='none'?tb.getBoundingClientRect():null;
   TB=tr&&tr.width>=r.width*.6&&tr.top>r.top+r.height*.5?Math.max(0,r.bottom-tr.top):0;lay.style.setProperty('--tb',TB+'px');
   R.setSize(W,H,false);cam.aspect=W/H;fpx=(H/2)/tanV;mN.uniforms.uScale.value=fpx*PR;zone();OFF.x=OFFT.x;OFF.y=OFFT.y;cam.setViewOffset(W,H,OFF.x,OFF.y,W,H);CL.forEach(c=>{c.el.classList.remove('mini');c.w=c.el.offsetWidth;c.h=c.el.offsetHeight;c.el.classList.add('mini');c.wm=c.el.offsetWidth;c.hm=Math.min(c.el.offsetHeight,28);c.el.classList.toggle('mini',!!c.mini)});WN.clear()};
@@ -1424,6 +1585,8 @@ function monter3D(T,jeton){
 
  /* ---------- état ---------- */
  let ALL=null,SEL=null,FK=null,LIT=new Set(),HOV=-1,FIL=[],VIS=new Uint8Array(n).fill(1),NKV=NK.slice(),FLY=null,IDLE=null,FADING=true,pulseEnd=0,BENCH=0,FR=0,last=0;
+ /* cache des boîtes de l'interface (voir etiquettes) et cadence des étiquettes */
+ let UIB=null,UIBt=0,tLab=0;
  const demande=()=>{if(!raf&&G3&&G3.jeton===jeton)raf=requestAnimationFrame(frame)};
  const lu=v=>Math.max(0,Math.min(1,v));
  function cibles(){for(let i=0;i<n;i++){let a=(VIS[i]?1:.05)*LA[i],s=BSZ[i]*SZF[i];
@@ -1475,7 +1638,9 @@ function monter3D(T,jeton){
   fi.querySelector('#c3x').onclick=()=>fermerFiche();const f=fi.querySelector('#c3fil');if(f)f.onclick=()=>{const j=FIL.pop();if(j!=null)choisir(j,{retour:true})};
   fi.querySelector('#c3gr').onclick=()=>{fi.classList.toggle('max');setTimeout(zone,320)};
   fi.querySelector('#c3open').onclick=()=>ouvrirNote(b.id);
-  fi.querySelector('#c3learn').onclick=()=>{const cs=cartesNote(b.id);if(!cs.length){toast(ic('info')+'Aucune carte pour cette note');return}const nv=cs.filter(x=>!S.sr[x.id]),vv=cs.filter(x=>S.sr[x.id]);stop3D();reviser(nv.concat(vv).map(x=>x.id),{titre:'Note · '+plain(b.h)})};
+  fi.querySelector('#c3learn').onclick=()=>{const cs=cartesNote(b.id);if(!cs.length){toast(ic('info')+'Aucune carte pour cette note');return}const nv=cs.filter(x=>!S.sr[x.id]),du=cs.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=tN()),l=nv.concat(du);stop3D();
+   l.length?reviser(l.map(x=>x.id),{titre:'Note · '+plain(b.h)})
+           :reviser(cs.map(x=>x.id),{titre:'Note · '+plain(b.h),libre:true})};
   zone();if(k>=ps.length&&notePages(b).length===1)questAdd('brief')}
  /* liens [[id|texte]] et pastilles de la fiche : on vole vers la note au lieu de quitter le cerveau */
  on(lay,'click',e=>{const a=e.target.closest&&e.target.closest('[data-n],[data-v]');if(!a||!fi.contains(a))return;e.preventDefault();e.stopPropagation();const j=idx[a.dataset.n||a.dataset.v];if(j==null)return;if(a.tagName==='A')questAdd('lien');choisir(j)});
@@ -1516,7 +1681,16 @@ function monter3D(T,jeton){
  function etiquettes(){proj();const boxes=[],zf=lu((O.r-1.5)/1.1),px=cam.position.x,py=cam.position.y,pz=cam.position.z,cxU=U.x+U.w/2,cyU=U.y+U.h/2;
   const libre=(x,y,w,h)=>{for(const b of boxes)if(x<b[0]+b[2]&&b[0]<x+w&&y<b[1]+b[3]&&b[1]<y+h)return false;return true};
   const dedans=(x,y,w,h)=>x>=U.x+2&&y>=U.y-4&&x+w<=U.x+U.w-2&&y+h<=U.y+U.h+4;
-  for(const el of UI)if(el.offsetParent&&getComputedStyle(el).opacity>.5){const r=el.getBoundingClientRect(),l=lay.getBoundingClientRect();boxes.push([r.left-l.left-4,r.top-l.top-4,r.width+8,r.height+8])}
+  /* Les boîtes des boutons ne bougent qu'au redimensionnement ou quand un panneau s'ouvre. Les
+     relire à chaque image forçait un recalcul de mise en page synchrone soixante fois par seconde,
+     c'était le premier coût du rendu. On les garde en cache, invalidé par zone(). */
+  /* Les boîtes des boutons ne bougent presque jamais. Les relire à chaque image forçait un
+     recalcul de mise en page synchrone soixante fois par seconde : c'était le premier coût du
+     rendu. On les garde 400 ms, et zone() les invalide dès qu'un panneau s'ouvre. */
+  const tb=performance.now();
+  if(!UIB||tb-UIBt>400){UIBt=tb;UIB=[];const l=lay.getBoundingClientRect();
+   for(const el of UI)if(el.offsetParent&&getComputedStyle(el).opacity>.5){const r=el.getBoundingClientRect();UIB.push([r.left-l.left-4,r.top-l.top-4,r.width+8,r.height+8])}}
+  for(const b of UIB)boxes.push(b);
   /* notes à étiqueter : la note choisie et ses voisines, sinon celles proches du centre (proximité et degré) */
   let cand=[];const cap=15;
   if(SEL!=null){cand=[SEL].concat(ADJ[SEL].slice().sort((a,b)=>deg[b]-deg[a]))}
@@ -1544,7 +1718,19 @@ function monter3D(T,jeton){
  function frame(now){raf=0;if(!G3||G3.jeton!==jeton)return;const dt=Math.min(.05,last?(now-last)/1000:.016);last=now;let act=false;
   if(FLY){const k=Math.min(1,(now-FLY.t0)/FLY.d),e=ease(k),a=FLY.a,b=FLY.b;for(const p of ['x','y','z','th','ph','r'])O[p]=a[p]+(b[p]-a[p])*e;O.r+=FLY.bump*Math.sin(Math.PI*e);if(k>=1)FLY=null;act=true}
   else if(!PTR.size&&(O.vth||O.vph)){const f=dt*60;O.th+=O.vth*f;O.ph=clPh(O.ph+O.vph*f);const dc=Math.exp(-dt*4);O.vth*=dc;O.vph*=dc;if(Math.abs(O.vth)<1e-4&&Math.abs(O.vph)<1e-4)O.vth=O.vph=0;act=true}
-  if(IDLE&&!FLY&&!PTR.size){const t=Math.max(0,(now-IDLE.t0)/1000);O.th=IDLE.th+.5*Math.sin(t*.14)*(1-Math.exp(-t/2.5));act=true;if(t>80)IDLE=null}
+  /* Dérive au repos : le cerveau respire au lieu de se figer. Lacet lent, hauteur qui ondule d'un
+     souffle et distance qui va et vient très légèrement. Trois périodes premières entre elles pour
+     que le mouvement ne se répète jamais à l'identique. Tout s'arrête au bout de 80 s (batterie). */
+  /* Dérive au repos : le cerveau respire au lieu de se figer. Lacet lent, hauteur qui ondule et
+     distance qui va et vient très légèrement. Trois périodes sans multiple commun, pour que le
+     mouvement ne se répète pas. Tout s'arrête après 80 s (batterie). La hauteur et la distance de
+     départ sont prises au premier passage : une dérive créée sans elles ne doit pas donner NaN. */
+  if(IDLE&&!FLY&&!PTR.size){const t=Math.max(0,(now-IDLE.t0)/1000),m=1-Math.exp(-t/2.5);
+   if(IDLE.ph==null)IDLE.ph=O.ph;if(IDLE.r==null)IDLE.r=O.r;
+   O.th=IDLE.th+.5*Math.sin(t*.14)*m;
+   O.ph=clPh(IDLE.ph+.075*Math.sin(t*.089+1.7)*m);
+   O.r=IDLE.r*(1+.035*Math.sin(t*.061+.4)*m);
+   act=true;if(t>80)IDLE=null}
   if(BENCH>now){O.th+=dt*.9;act=true;FR++}
   if(Math.abs(OFF.x-OFFT.x)>.4||Math.abs(OFF.y-OFFT.y)>.4){const k=1-Math.exp(-dt*9);OFF.x+=(OFFT.x-OFF.x)*k;OFF.y+=(OFFT.y-OFF.y)*k;act=true}else{OFF.x=OFFT.x;OFF.y=OFFT.y}
   cam.setViewOffset(W,H,OFF.x,OFF.y,W,H);
@@ -1556,7 +1742,12 @@ function monter3D(T,jeton){
   /* lueurs et étincelles le long des fibres allumées : 24 s après le choix, puis tout se fige (batterie) */
   if(HL){const vif=!RM&&now<pulseEnd;HL.p.visible=vif;mH.uniforms.uPu.value=vif?1:0;if(vif){HL.nb.forEach((j,k)=>bez(j,HL.i,(tt*.42+HL.off[k])%1,HL.pp,k*3));HL.p.geometry.attributes.position.needsUpdate=true;act=true}}
   [mN,mL,mH,mS,G3.mDust].forEach(m=>{if(m)m.uniforms.uR.value=O.r});
-  poser();R.render(scene,cam);etiquettes();G3.images=(G3.images||0)+1;if(act)demande()}
+  poser();R.render(scene,cam);
+  /* Les étiquettes se replacent trente fois par seconde, pas soixante : l'œil ne voit pas la
+     différence sur du texte, et le rendu garde toute sa cadence. Un dernier passage est fait
+     dès que le mouvement s'arrête, pour que rien ne reste posé de travers. */
+  if(now-tLab>=33||!act){tLab=now;etiquettes()}
+  G3.images=(G3.images||0)+1;if(act)demande()}
 
  /* ---------- gestes : un doigt tourne (avec inertie), deux doigts pincent et déplacent, molette vers le pointeur ---------- */
  const PTR=new Map();let g0=null,moved=0,tDown=0,down=null,pinch=null,panM=false,tLast=0,lastTap=0,lastXY=null;
@@ -1565,8 +1756,8 @@ function monter3D(T,jeton){
  const panPx=(dx,dy)=>{const {r,u}=base(O.th,O.ph),k=wpp();O.x+=(-dx*r[0]+dy*u[0])*k;O.y+=(-dx*r[1]+dy*u[1])*k;O.z+=(-dx*r[2]+dy*u[2])*k;O.x=Math.max(-1.5,Math.min(1.5,O.x));O.y=Math.max(-1.1,Math.min(1.1,O.y));O.z=Math.max(-1.6,Math.min(1.6,O.z))};
  const zoomA=(f,sx,sy)=>{const nr=Math.max(.3,Math.min(10,O.r*f)),ff=nr/O.r,{r,u}=base(O.th,O.ph),k=wpp(),ox=(sx-(W/2-OFF.x))*k,oy=(sy-(H/2-OFF.y))*k;
   O.x+=(r[0]*ox-u[0]*oy)*(1-ff);O.y+=(r[1]*ox-u[1]*oy)*(1-ff);O.z+=(r[2]*ox-u[2]*oy)*(1-ff);O.r=nr};
- function eteindreAide(){hint.classList.add('off')}
- function toucher(){IDLE=null;eteindreAide();clearTimeout(tIdle);if(!RM)tIdle=setTimeout(()=>{if(G3&&G3.jeton===jeton&&SEL==null&&!PTR.size&&!FLY){IDLE={t0:performance.now(),th:O.th};demande()}},20000)}
+ function eteindreAide(){hint.classList.add('off');UIB=null}
+ function toucher(){IDLE=null;eteindreAide();clearTimeout(tIdle);if(!RM)tIdle=setTimeout(()=>{if(G3&&G3.jeton===jeton&&SEL==null&&!PTR.size&&!FLY){IDLE={t0:performance.now(),th:O.th,ph:O.ph,r:O.r};demande()}},20000)}
  /* tout près d'une note (après un zoom), sa fiche s'ouvre */
  function apresZoom(){if(O.r>.85)return;let best=-1,bd=1e9;const cxU=W/2-OFF.x,cyU=H/2-OFF.y;proj();for(let i=0;i<n;i++){if(!VIS[i]||SW[i]<=.01||FC[i]<0)continue;const d=Math.hypot(SX[i]-cxU,SY[i]-cyU);if(d<bd){bd=d;best=i}}if(best>=0&&bd<90&&best!==SEL)choisir(best,{doux:true})}
  function viser(x,y){let best=-1,bs=1e9;for(let i=0;i<n;i++){if(!VIS[i]||SW[i]<=.01)continue;const d=Math.hypot(SX[i]-x,SY[i]-y),rr=Math.max(22,ST[i]*fpx/SW[i]*.22);if(d>rr)continue;const s=d/rr+(FC[i]<0?.7:0)+(SEL!=null&&AC[i]<.5?.2:0);if(s<bs){bs=s;best=i}}return best}
@@ -1603,7 +1794,7 @@ function monter3D(T,jeton){
  const ids=[];for(let i=0;i<n;i++)if(VIS[i])ids.push(i);O.r=ajuster(ids,[0,0,0],V0.th,V0.ph,BORDS);
  if(CV.scope&&CV.scope!=='tout')vue();else{const r0=O.r;O.r=r0*1.35;voler({r:r0},RM?1:1100)}
  if(CV.sel&&idx[CV.sel]!=null)setTimeout(()=>{if(G3&&G3.jeton===jeton)choisir(idx[CV.sel])},RM?0:350);
- else if(!RM)IDLE={t0:performance.now()+900,th:V0.th};
+ else if(!RM)IDLE={t0:performance.now()+900,th:V0.th,ph:null,r:null};
  /* allumage : les notes qui ont gagné de la lumière depuis la dernière visite s'allument l'une après l'autre,
     celles qui ont pâli prennent leur nouvelle teinte tout de suite */
  {const g=[];for(let i=0;i<n;i++){if(LUM[i]-LG[i]>.02)g.push(i);else{LG[i]=LUM[i];teinte(i)}}gN.attributes.aCol.needsUpdate=true;cibles();
@@ -1760,7 +1951,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v14"></script>
-<script src="acces.js?v=bq5-v14"></script>
+<script src="entrainement.js?v=bq5-v15"></script>
+<script src="acces.js?v=bq5-v15"></script>
 </body>
 </html>
