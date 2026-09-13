@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Brevet Quest</title>
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -33,7 +33,9 @@ html.hc{--ink2:#3A3A42;--ink3:#45454E;--line:rgba(0,0,0,.28);--line2:rgba(0,0,0,
 html.hc .card,html.hc .stat,html.hc .lrow,html.hc .list button{outline:1px solid var(--line2)}
 html.f-serif{--fl:"New York",ui-serif,Georgia,"Times New Roman",serif}html.f-round{--fl:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
+/* Pas de zoom de la page : un pincement ou deux touches rapides agrandissaient toute l'app et
+   décalaient l'interface. Le texte se règle dans Profil, section Lecture (17, 19 ou 21 px). */
+html{-webkit-text-size-adjust:100%;touch-action:pan-x pan-y}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.45;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 body{min-height:100dvh}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation;padding:0}
@@ -64,12 +66,23 @@ a{color:var(--accent)}
 .lecture{font-family:var(--fl);font-size:var(--fs);line-height:var(--lh);max-width:var(--mw)}
 .lecture p{margin:10px 0}.lecture .dl li,.lecture .dl>li>b,.lecture .enum li,.lecture .nl li{font-size:inherit;line-height:inherit}
 .lecture h1{font-family:var(--fb);font-size:28px;margin:4px 0 6px}
-aaa[data-n]{color:var(--accent2);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);text-underline-offset:3px;text-decoration-thickness:1.5px;cursor:pointer;border-radius:3px}
+a[data-n]{color:var(--accent2);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);text-underline-offset:3px;text-decoration-thickness:1.5px;cursor:pointer;border-radius:3px}
 a[data-n]:hover{background:var(--tint)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}.chip{display:inline-flex;align-items:center;gap:6px;font-size:14.5px;font-weight:600;background:var(--card2);color:var(--ink);border-radius:999px;padding:9px 13px;min-height:40px;text-align:left;line-height:1.25}.chip small{font-weight:500;color:var(--ink2);font-size:12.5px}.chip .cdot{width:8px;height:8px}
 /* figures et laboratoires : toujours sur fond sombre, les schémas sont dessinés pour lui */
 .fig{margin:12px 0;background:var(--fig);color:#E5E7EB;border-radius:12px;padding:10px;overflow-x:auto;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 24px rgba(0,0,0,.18);--card:#0F172A;--card2:#1F2937;--ink:#E5E7EB;--ink2:#9CA3AF;--ink3:#6B7280;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.18);--field:#0F172A;--muted:#9CA3AF;--gold:#FBBF24;--amber:#FBBF24;--amber2:#FCD34D;--tint:rgba(255,255,255,.08);font-family:var(--fb);font-size:15px}
 .fig svg{display:block;width:100%;height:auto;max-height:230px}
+.fig.zoom{cursor:zoom-in;position:relative}
+.fig.zoom::after{content:'';position:absolute;right:8px;bottom:8px;width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E5E7EB' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5M11 8v6M8 11h6'/%3E%3C/svg%3E") center/17px no-repeat}
+/* Un schéma est dessiné sur 620 unités de large : sur un téléphone ses étiquettes tombent à six
+   pixels. La page ne zoomant plus, on l'ouvre en grand, avec des crans et un défilement. */
+#figv{position:fixed;inset:0;z-index:60;background:rgba(3,6,14,.88);display:flex;align-items:center;justify-content:center;padding:calc(10px + var(--sat)) 10px calc(10px + var(--sab));animation:fadein .18s}
+.figz{width:100%;max-width:1100px;max-height:100%;display:flex;flex-direction:column;gap:10px}
+.figzb{display:flex;gap:8px;justify-content:flex-end;flex:none}
+.figzc{overflow:auto;-webkit-overflow-scrolling:touch;border-radius:12px;min-height:0}
+.figzc .fig{margin:0;width:calc(100% * var(--z,1));cursor:auto}
+.figzc .fig::after{display:none}
+.figzc .fig svg{max-height:none}
 .lab{display:grid;gap:12px}.lab label{display:grid;gap:4px;font-size:13px;color:var(--ink2)}.lab label .mono{color:var(--ink);font-size:14px}
 .lab input[type=range]{accent-color:var(--gold);width:100%}.lab select{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
 .read{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.read div{background:var(--card2);border-radius:10px;padding:8px 10px}
@@ -229,7 +242,7 @@ select.field{font-size:16px;font-weight:600;padding:10px 12px}
 /* cerveau 3D : calque plein écran hors de #app (l'observateur de glissement casserait un élément fixe dedans).
    Fond sombre profond dans les deux thèmes ; la fiche, elle, suit le thème et les réglages de lecture. */
 body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
-#c3d{position:fixed;inset:0;z-index:4;overflow:hidden;color:rgba(255,255,255,.92);background:radial-gradient(120% 85% at 50% 40%,#17213f 0%,#0b1024 46%,#04060d 100%);animation:fadein .35s;--tb:0px;-webkit-user-select:none;user-select:none}
+#c3d{--fh:44%;position:fixed;inset:0;z-index:4;overflow:hidden;color:rgba(255,255,255,.92);background:radial-gradient(120% 85% at 50% 40%,#17213f 0%,#0b1024 46%,#04060d 100%);animation:fadein .35s;--tb:0px;-webkit-user-select:none;user-select:none}
 #c3d [hidden]{display:none!important}
 @media(min-width:900px){#c3d{left:230px}}
 .c3stage{position:absolute;inset:0;touch-action:none;cursor:grab}.c3stage:active{cursor:grabbing}
@@ -271,13 +284,16 @@ body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
 .c3leg{position:absolute;right:12px;top:calc(62px + var(--sat));width:min(340px,calc(100% - 24px));max-height:calc(100% - 150px - var(--sat) - var(--tb));overflow:auto;border-radius:18px;padding:6px 6px 8px;z-index:5;background:rgba(18,23,44,.9)}
 .c3leg h4{margin:10px 10px 4px;font-size:13px;font-weight:700;letter-spacing:.04em;color:rgba(255,255,255,.6)}
 .c3leg button{display:flex;gap:10px;align-items:center;width:100%;min-height:44px;padding:6px 10px;border-radius:11px;text-align:left;font-size:16px;line-height:1.25;color:rgba(255,255,255,.92)}
-.c3leg button:hover,.c3leg button:focus-visible{background:rgba(255,255,255,.09)}.c3leg button>i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor}
+.c3leg button:hover,.c3leg button:focus-visible{background:rgba(255,255,255,.09)}
+.c3leg button.on{background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}.c3leg button>i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor}
 .c3leg button span{flex:1}.c3leg button b{font-weight:700}.c3leg small{font-size:13px;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}
 .c3tools{position:absolute;right:12px;bottom:calc(var(--tb) + 16px);display:flex;flex-direction:column;gap:8px;z-index:2;transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1)}
 .c3tools button{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center}.c3tools .ic{width:21px;height:21px}
 .c3hint{position:absolute;left:12px;right:68px;bottom:calc(var(--tb) + 16px);margin:0 auto;max-width:360px;text-align:center;font-size:15px;line-height:1.35;color:rgba(255,255,255,.8);padding:11px 14px;border-radius:14px;pointer-events:none;transition:opacity .5s;z-index:1}
 .c3hint.off{opacity:0}
-.c3fiche{position:absolute;left:0;right:0;bottom:var(--tb);height:44%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg);color:var(--ink);border-radius:22px 22px 0 0;box-shadow:0 -14px 44px rgba(0,0,0,.5);padding:0 16px 22px;animation:sheet .32s cubic-bezier(.2,.8,.2,1);touch-action:pan-y;-webkit-user-select:text;user-select:text;z-index:4;transition:height .3s cubic-bezier(.2,.8,.2,1)}
+/* La hauteur de la fiche sert aussi à placer le bouton recentrer au dessus d'elle : une seule
+   valeur, pour que les deux ne puissent plus diverger. */
+.c3fiche{position:absolute;left:0;right:0;bottom:var(--tb);height:var(--fh,44%);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg);color:var(--ink);border-radius:22px 22px 0 0;box-shadow:0 -14px 44px rgba(0,0,0,.5);padding:0 16px 22px;animation:sheet .32s cubic-bezier(.2,.8,.2,1);touch-action:pan-y;-webkit-user-select:text;user-select:text;z-index:4;transition:height .3s cubic-bezier(.2,.8,.2,1)}
 .c3fiche.max{height:calc(100% - var(--tb) - 64px - var(--sat))}
 .c3grab{display:flex;width:100%;height:22px;align-items:center;justify-content:center;position:sticky;top:0;background:var(--bg);z-index:1}.c3grab i{width:40px;height:5px;border-radius:3px;background:var(--line2)}
 .c3fh{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px}.c3fh .back span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:15em}
@@ -287,7 +303,11 @@ body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
 .c3acts{display:grid;gap:8px;margin:16px 0 6px}@media(min-width:520px){.c3acts{grid-template-columns:1fr 1fr}}
 .c3h3{font-size:17px;margin:20px 0 4px;display:flex;align-items:center;gap:8px}.c3h3 .ic{width:18px;height:18px;color:var(--ink3)}
 .c3fiche .chip{min-height:44px}
-@media(max-width:899px){#c3d.fo .c3tools,#c3d.fo .c3row,#c3d.fo .c3hint{opacity:0;pointer-events:none}}
+/* Fiche ouverte sur un téléphone : le bouton « recentrer » reste, c'est lui qui sort d'une vue
+   perdue. Avant, tous les contrôles disparaissaient et il fallait refermer la fiche pour agir. */
+@media(max-width:899px){#c3d.fo .c3row,#c3d.fo .c3hint{opacity:0;pointer-events:none}
+ #c3d.fo .c3tools{bottom:calc(var(--fh,44%) + var(--tb) + 12px)}#c3d.fo .c3tools #c3zp,#c3d.fo .c3tools #c3zm{display:none}
+ #c3d.fo.fmax .c3tools{opacity:0;pointer-events:none}}
 @media(min-width:900px){
  .c3fiche{left:auto;top:0;bottom:0;height:auto;width:min(440px,44%);border-radius:0;padding:calc(10px + var(--sat)) 22px 24px;animation:panin .3s cubic-bezier(.2,.8,.2,1);box-shadow:-14px 0 44px rgba(0,0,0,.45)}
  .c3grab{display:none}
@@ -646,7 +666,7 @@ const fmtList=(p,wrap)=>{const re=/(^|[.:;,]\s)<b>(\d{1,2})<\/b>\s(?=(?!et\b|ou\
  if(ms.length<2||ms[0][2]>12)return null;for(let i=1;i<ms.length;i++)if(+ms[i][2]<=+ms[i-1][2])return null;
  const cut=m=>m.index+m[1].length;const lead=p.slice(0,cut(ms[0])).trim();
  const items=ms.map((m,i)=>p.slice(cut(m)+m[0].length-m[1].length,i+1<ms.length?cut(ms[i+1]):undefined).trim().replace(/[,;]$/,''));
- const ol=`<ol class="nl">${items.map((t,i)=>`<li value="${ms[i][2]}">${t}</li>`).join('')}</ol>`;return wrap?wrap(lead,ol):(lead?`<p>${lead}</p>`:'')+ol};
+ const ol=`<ol class="nl">${equilibrer(items).map((t,i)=>`<li value="${ms[i][2]}">${t}</li>`).join('')}</ol>`;return wrap?wrap(lead,ol):(lead?`<p>${lead}</p>`:'')+ol};
 /* Une suite de « <b>Terme</b> : définition. <b>Terme</b> : définition. » devient une liste de définitions,
    un terme par ligne, en titre : on retient un vocabulaire bien plus vite quand chaque mot a sa case.
    Le marqueur doit ouvrir un segment (début, <br>, ou fin de phrase), avec au plus trois mots devant. */
@@ -654,18 +674,108 @@ const fmtList=(p,wrap)=>{const re=/(^|[.:;,]\s)<b>(\d{1,2})<\/b>\s(?=(?!et\b|ou\
    devient une liste à puces. Les phrases qui ne sont pas de vraies listes restent intactes. */
 const ENUMSTOP=/^(mais|puis|donc|ou|pour|avec|sans|dans|sur|par|car|que|qui|en|à|au|aux|de|du|des|d'|l'|entre|plus|ouvert|soit|ensuite|enfin|alors|ainsi|et|ni|comme|si|sinon|sauf|voire|c'est)\b/i;
 const topSplit=(s,sep)=>{const o=[];let d=0,last=0;for(let i=0;i<s.length;i++){const c=s[i];if(c==='(')d++;else if(c===')')d--;else if(!d&&s.startsWith(sep,i)){o.push(s.slice(last,i));last=i+sep.length;i+=sep.length-1}}o.push(s.slice(last));return o};
-const enumItems=t=>{t=t.trim().replace(/[.!?]+$/,'');if(/[.!?;]/.test(t.replace(/\([^)]*\)/g,'')))return null;let it=topSplit(t,', ');
- if(it.length>=2){const l=it[it.length-1],k=l.indexOf(' et ');if(k>0&&k<=32&&l.length-k-4<=32&&!/\(/.test(l.slice(0,k)))it.splice(it.length-1,1,l.slice(0,k),l.slice(k+4))}
+const enumItems=t=>{t=t.trim().replace(/[.!?]+$/,'');if(/[.!?;]/.test(t.replace(/\([^)]*\)/g,'')))return null;let it=topSplit(t,', ').map(x=>x.trim());
+ if(it.length>=2){const l=it[it.length-1],k=l.indexOf(' et ');if(k>0&&k<=32&&l.length-k-4<=32&&!/\(/.test(l.slice(0,k)))it.splice(it.length-1,1,l.slice(0,k),l.slice(k+4))
+  /* « a, b, et c » : le dernier élément garde son « et ». Sans ce nettoyage il commence par une
+     conjonction, que ENUMSTOP rejette, et toute l'énumération retombe en prose. */
+  else if(/^et\s+/i.test(l))it[it.length-1]=l.replace(/^et\s+/i,'')}
  if(it.length<3)return null;const txt=x=>x.replace(/<[^>]+>/g,'').trim();if(it.some(x=>{const s=txt(x);return s.length<2||s.length>48||ENUMSTOP.test(s)}))return null;return it.map(x=>x.trim())};
-const ulOf=it=>`<ul class="enum">${it.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+/* Couper une énumération ou un pavé peut laisser un <b> ouvert dans un morceau et sa fermeture
+   dans le suivant : le navigateur étend alors le gras jusqu'au bout du paragraphe. On referme ce
+   qui reste ouvert à la fin de chaque morceau, et on le rouvre au début du suivant. */
+function equilibrer(ms){const pile=[];return ms.map(t=>{
+ const debut=pile.map(x=>'<'+x.n+x.a+'>').join('');
+ for(const g of String(t).matchAll(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)([^<>]*)>/g)){
+  if(VIDE3.test(g[2]))continue;
+  if(g[1]){if(pile.length&&pile[pile.length-1].n.toLowerCase()===g[2].toLowerCase())pile.pop()}
+  else pile.push({n:g[2],a:g[3]});}
+ const fin=pile.slice().reverse().map(x=>'</'+x.n+'>').join('');
+ return debut+t+fin})}
+const ulOf=it=>`<ul class="enum">${equilibrer(it).map(x=>`<li>${x}</li>`).join('')}</ul>`;
 const fmtEnum=h=>{const parts=h.match(/[^.!?]+(?:[.!?]+|$)/g);if(!parts)return null;let out='',buf='',any=false;
  parts.forEach(s=>{const k=s.indexOf(' : ');if(k>0){const head=s.slice(0,k),it=enumItems(s.slice(k+3));if(it&&head.replace(/<[^>]+>/g,'').trim().length<=80){any=true;if(buf.trim())out+=`<p>${buf.trim()}</p>`;buf='';out+=`<p class="lh">${head.trim()} :</p>`+ulOf(it);return}}buf+=s});
  if(!any)return null;if(buf.trim())out+=`<p>${buf.trim()}</p>`;return out};
 const fmtDefs=p=>{const re=/(^|<br>|[.!?]\s)\s*((?:[^<.:;!?]{1,30}?\s)?)<b>((?:(?!<\/b>).){1,80}?)<\/b>\s*:\s*/g;const ms=[...p.matchAll(re)];if(ms.length<2)return null;
  const cut=m=>m.index+m[1].length;const lead=p.slice(0,cut(ms[0])).replace(/(<br>|\s)+$/,'').trim();
- const items=ms.map((m,i)=>{let d=p.slice(m.index+m[0].length,i+1<ms.length?cut(ms[i+1]):undefined).replace(/(<br>|\s)+$/,'').trim();const it=enumItems(d);return `<li><b>${(m[2]||'').trim()}${m[2]?' ':''}${m[3]}</b>${it?ulOf(it):'<span class="d">'+d+'</span>'}</li>`});
- return (lead?`<p>${lead}</p>`:'')+`<ul class="dl">${items.join('')}</ul>`};
-const para=p=>{const h=fx(p);return fmtList(h)||fmtDefs(h)||fmtEnum(h)||`<p>${h}</p>`};
+ const items=ms.map((m,i)=>{let d=p.slice(m.index+m[0].length,i+1<ms.length?cut(ms[i+1]):undefined).replace(/(<br>|\s)+$/,'').trim();const it=enumItems(d);return `<b>${(m[2]||'').trim()}${m[2]?' ':''}${m[3]}</b>${it?ulOf(it):'<span class="d">'+d+'</span>'}`});
+ /* la découpe tombe au milieu du texte : chaque définition referme ce qu'elle laisse ouvert */
+ return (lead?`<p>${lead}</p>`:'')+`<ul class="dl">${equilibrer(items).map(x=>`<li>${x}</li>`).join('')}</ul>`};
+/* Découpe un fragment en phrases sans jamais couper dans une balise, ni sur le point d'une
+   abréviation (art. 79) ou d'un nombre (3.5). Sert aux trois mises en forme ci-dessous : elles
+   déplacent le texte, elles n'en changent jamais un mot. */
+/* Deux listes, parce que « 1,5 m. » n'est pas « M. » : les abréviations en minuscules tolèrent
+   la casse, celles qui commencent par une majuscule l'exigent. */
+const ABREV=/(?:^|[\s(])(?:art|ch|al|cf|env|max|min|ex|p|fig|no|vol|éd|pp|etc|réf|chap|tab)$/i;
+const ABREVMAJ=/(?:^|[\s(])(?:M|Mme|MM|MM|St|Ste|Mgr)$/;
+const OUVRE=/^<([a-zA-Z][a-zA-Z0-9]*)\b[^<>]*>/,FERME=/^<\/([a-zA-Z][a-zA-Z0-9]*)\s*>/,VIDE3=/^(br|hr|img|input)$/i;
+function phrases(h){const o=[];
+ for(const bl of String(h).split(/<br\s*\/?>/i)){let pile=0,last=0;
+  for(let i=0;i<bl.length;i++){const c=bl[i];
+   /* Le cours écrit « λ < cos φ » et « > 50 MΩ » : un chevron isolé est du texte, pas une balise.
+      On ne saute que les balises entières, et on retient combien d'éléments sont encore ouverts :
+      couper entre <b> et </b> étendrait le gras jusqu'au bout du paragraphe. */
+   if(c==='<'){const fe=bl.slice(i).match(FERME);
+    if(fe){pile=Math.max(0,pile-1);i+=fe[0].length-1;continue}
+    const ou=bl.slice(i).match(OUVRE);
+    if(ou){if(!VIDE3.test(ou[1]))pile++;i+=ou[0].length-1;continue}}
+   if(pile||!/[.!?…]/.test(c))continue;
+   let j=i+1;while(j<bl.length&&/[.!?…"»)]/.test(bl[j]))j++;
+   const avant=bl.slice(Math.max(0,i-6),i),apres=bl.slice(j),suite=apres.replace(/^\s+/,'');
+   if(/\d$/.test(avant)&&/^\d/.test(suite))continue;
+   if(ABREV.test(avant)||ABREVMAJ.test(avant))continue;
+   if(!suite){o.push(bl.slice(last,j));last=j;break}
+   if(apres===suite)continue;
+   /* la phrase suivante peut commencer par un gras ou un lien : on regarde ce qu'il y a après */
+   if(!/^[A-ZÀ-ÖØ-Þ0-9«"[]/.test(suite.replace(/^(?:<[^>]+>)+/,'')))continue;
+   o.push(bl.slice(last,j));last=j;i=j-1}
+  if(last<bl.length)o.push(bl.slice(last))}
+ return o.map(x=>x.trim()).filter(Boolean)}
+/* Plusieurs phrases « Étiquette : contenu » à la suite forment une liste, même quand l'étiquette
+   n'est pas en gras. C'est la forme la plus fréquente des supports de cours. On exige que toutes
+   les phrases de la fin s'y conforment : une seule phrase de prose parmi elles et on n'y touche pas. */
+const fmtEtiq=h=>{const ph=phrases(h);if(ph.length<3)return null;
+ const est=x=>{const k=x.indexOf(' : ');if(k<=0||k>44)return null;const lab=x.slice(0,k).trim();
+  if(/[,;:()]/.test(lab)||/<\/?[abi]\b/i.test(lab)||lab.split(/\s+/).length>6||!/^[A-ZÀ-ÖØ-Þ]/.test(lab))return null;
+  const d=x.slice(k+3).trim();return d.length>=12?[lab,d]:null};
+ let i=0;const tete=[];while(i<ph.length&&!est(ph[i])){tete.push(ph[i]);i++}
+ const it=[];for(;i<ph.length;i++){const e=est(ph[i]);if(!e)return null;it.push(e)}
+ if(it.length<2)return null;
+ return (tete.length?`<p>${tete.join(' ')}</p>`:'')+`<ul class="dl">${equilibrer(it.map(([l,d])=>`<b>${l}</b><span class="d">${d}</span>`)).map(x=>`<li>${x}</li>`).join('')}</ul>`};
+/* Un pavé se lit mal sur un téléphone, surtout quand on n'aime pas lire. Au-delà de 255 caractères
+   on coupe entre les phrases, par paquets d'environ 165. Aucune phrase n'est coupée, l'ordre et les
+   mots restent les mêmes : c'est de la mise en page, pas de la réécriture. */
+const aerer=h=>{if(plain(h).length<255)return null;const ph=phrases(h);if(ph.length<2)return null;
+ const out=[];let buf='';
+ /* On vide AVANT de déborder : accumuler puis couper laissait entières les paires courte + longue,
+    qui sont justement les pavés les plus pénibles à lire. */
+ for(const x of ph){const n=plain(x).length,b=plain(buf).length;
+  if(buf&&b+n>230){out.push(buf);buf=x}else buf=buf?buf+' '+x:x;
+  if(plain(buf).length>=195){out.push(buf);buf=''}}
+ if(buf){if(plain(buf).length<60&&out.length)out[out.length-1]+=' '+buf;else out.push(buf)}
+ return out.length>1?equilibrer(out).map(x=>`<p>${x}</p>`).join(''):null};
+/* « Tête : a ; b ; c » est une liste dont les éléments peuvent être longs. Le point-virgule est
+   le séparateur des supports de cours pour les énumérations qui ne tiennent pas en trois mots.
+   Le pavé est repris phrase par phrase : dès qu'une seule donne une liste, tout le paragraphe
+   ressort découpé, les phrases sans liste restant des paragraphes à part entière. */
+const fmtPv=h=>{const ph=phrases(h);if(!ph.length)return null;const out=[];let any=false;
+ for(const x of ph){const k=x.indexOf(' : '),corps=k>0&&k<=90?x.slice(k+3):x;
+  const it=topSplit(corps.replace(/[.!?]+$/,''),' ; ').map(y=>y.trim()).filter(Boolean);
+  if(it.length>=3&&it.every(y=>plain(y).length>=8)){any=true;
+   out.push((k>0&&k<=90?`<p class="lh">${x.slice(0,k).trim()} :</p>`:'')+ulOf(it));continue}
+  out.push(`<p>${x}</p>`)}
+ return any?out.join(''):null};
+/* Dernier filet, quel que soit le formateur : un paragraphe referme ce qu'il laisse ouvert et le
+   paragraphe suivant le rouvre. Sans lui, un gras coupé par une découpe teinte tout ce qui suit. */
+const INLINE3=/^(b|i|em|strong|span|a|sub|sup|u|code)$/i;
+const reparerP=h=>{const pile=[];return String(h).replace(/<p([^<>]*)>([\s\S]*?)<\/p>/g,(m,att,inner)=>{
+ const debut=pile.map(x=>'<'+x.n+x.a+'>').join('');
+ for(const g of inner.matchAll(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)([^<>]*)>/g)){
+  if(!INLINE3.test(g[2]))continue;
+  if(g[1]){if(pile.length&&pile[pile.length-1].n.toLowerCase()===g[2].toLowerCase())pile.pop()}
+  else pile.push({n:g[2],a:g[3]});}
+ const fin=pile.slice().reverse().map(x=>'</'+x.n+'>').join('');
+ return '<p'+att+'>'+debut+inner+fin+'</p>'})};
+const para=p=>{const h=fx(p);return reparerP(fmtList(h)||fmtDefs(h)||fmtEnum(h)||fmtPv(h)||fmtEtiq(h)||aerer(h)||`<p>${h}</p>`)};
 
 /* Support autorisé à l'examen pour un chapitre. Présent en épreuve 1 ou 4 : par cœur, même s'il est
    aussi en épreuve 3. Seulement en épreuve 3 : classeur. Seulement en épreuve 2 : fascicule de 20 pages. */
@@ -710,7 +820,10 @@ NL.forEach(b=>(b.liens||[]).forEach(t=>{if(NOTES[t]&&t!==b.id)(BACK[t]=BACK[t]||
 const coursOf=li=>COURS.find(c=>c.l.includes(li))||{id:L[li].cours||'',t:''};
 /* Balises [[id|texte]] : lien cliquable vers la note (texte seul si la note n'existe plus). */
 const lk=h=>String(h||'').replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g,(m,id,t)=>NOTES[id]?`<a data-n="${id}" tabindex="0" role="link">${t}</a>`:t);
-const plain=h=>String(h||'').replace(/\[\[[^|\]]+\|([^\]]+)\]\]/g,'$1').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+/* On ne retire que les vraies balises : le cours écrit « λ < cos φ » et « > 50 MΩ », et l'ancien
+   filtre avalait tout ce qui allait d'un chevron au suivant, cachant le texte à la recherche
+   comme aux cartes. */
+const plain=h=>String(h||'').replace(/\[\[[^|\]]+\|([^\]]+)\]\]/g,'$1').replace(/<\/?[a-zA-Z][^<>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
 /* Cartes recto verso tirées des points clés k : une carte par idée. Le texte est coupé aux fins
    de phrase, les morceaux trop courts (moins de 80 caractères) sont regroupés, quatre cartes au
    plus par note. L'id « k-note-index » reste stable tant que le point clé ne change pas. */
@@ -927,6 +1040,10 @@ function aujourdhui(){newDay();const g=greet(),f=fileDuJour(),a=nextAction(),j=j
 function lancerFile(){const f=fileDuJour();const l=f.retard.concat(f.auj).slice(0,80).concat(f.nv);if(!l.length){toast(ic('check')+'Rien à réviser pour l\'instant');return}reviser(l,{titre:'Révision du jour'})}
 function bienvenue(){const t=today(),lo=S.lastOpen;if(lo===t)return;S.lastOpen=t;save({ts:false});if(!lo)return;const g=dayN(t)-dayN(lo);if(g<3)return;const nd=dues().length;
  celebrate({e:'smile',h:'Content de te revoir',p:(g>=7?'Une semaine sans nouvelles. ':g+' jours sans nouvelles. ')+(nd?nd+' cartes t\'attendent. Commence par cinq, le reste suivra.':'Rien de dû, parfait pour ouvrir un nouveau chapitre.'),conf:false,sound:'ok'})}
+/* Safari ignore user-scalable : seul le refus des gestes de zoom empêche vraiment l'agrandissement
+   de la page. Le cerveau 3D n'est pas gêné : son calque intercepte les pointeurs avant que Safari
+   n'y voie un geste de zoom, et il calcule lui même le pincement. */
+['gesturestart','gesturechange','gestureend'].forEach(g=>document.addEventListener(g,e=>e.preventDefault(),{passive:false}));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;const b=S.day.d;newDay();if(b!==S.day.d&&TAB==='auj'&&!document.body.classList.contains('focus'))aujourdhui()});
 
 
@@ -942,7 +1059,7 @@ function notePages(b){const p=b.p||[];const lens=p.map(x=>plain(x).length),tot=l
  return [p.slice(0,cut),p.slice(cut)]}
 function corpsNote(b,page){const pages=notePages(b),P=pages.length,pg=Math.max(0,Math.min(page||0,P-1)),c=coursOf(b.li);
  let h=`<div class="notepage lecture"><div class="meta"><span><i class="cdot" style="background:${couleurCours(c.id)}"></i> ${esc(c.id)} · ${esc(c.t)}</span><span>ch. ${b.li} · ${esc(L[b.li].t)}</span></div><h1>${b.h}</h1>${b.src?`<div class="src" style="margin-top:0">Source : ${b.src}</div>`:''}${tagAide(b.li)}`;
- if(pg===0){if(b.k)h+=`<div class="key"><div class="eyebrow">Points clés</div>${fmtKey(b.k)}</div>`;if(b.fig)h+=`<div class="fig">${b.fig}</div>`}
+ if(pg===0){if(b.k)h+=`<div class="key"><div class="eyebrow">Points clés</div>${fmtKey(b.k)}</div>`;if(b.fig)h+=`<div class="fig zoom" role="button" tabindex="0" aria-label="Agrandir le schéma">${b.fig}</div>`}
  h+=pages[pg].map(p=>para(lk(p))).join('');
  if(pg===P-1&&b.lab&&LAB[b.lab])h+=`<div class="fig"><div class="eyebrow">Laboratoire · touche les curseurs</div><div class="lab" data-lab>${''}</div><div data-labout style="margin-top:12px"></div></div>`;
  if(P>1)h+=`<div class="nav"><button class="btn ghost sm" data-pg="${pg-1}" ${pg?'':'disabled'}>${ic('chevL')}Début</button><span class="eyebrow" style="margin:0">Page ${pg+1} / ${P}</span><button class="btn sm${pg<P-1?'':' ghost'}" data-pg="${pg+1}" ${pg<P-1?'':'disabled'}>Suite${ic('chevR')}</button></div>`;
@@ -962,6 +1079,24 @@ function ouvrirPanneau(id,page){const b=NOTES[id];if(!b)return;let v=$('#voile')
   p.querySelector('#pclose').onclick=fermerPanneau;p.querySelector('#popen').onclick=()=>{fermerPanneau();document.body.classList.remove('focus');TAB='cerv';tabs();ouvrirNote(id)};bindNote(p,b,render);p.scrollTop=0};
  render(page||0);if(notePages(b).length===1)questAdd('brief')}
 function fermerPanneau(){const p=$('#panel'),v=$('#voile');if(p)p.remove();if(v)v.remove()}
+/* Schéma en grand : trois crans de largeur et un défilement, faute de pincement sur la page. */
+function fermerFigure(){const v=$('#figv');if(v)v.remove()}
+function agrandirFigure(svg){fermerFigure();
+ const v=document.createElement('div');v.id='figv';
+ v.innerHTML=`<div class="figz" role="dialog" aria-modal="true" aria-label="Schéma agrandi">
+  <div class="figzb"><button class="btn ghost sm" id="figm" aria-label="Réduire le schéma">${ic('minus')}</button><button class="btn ghost sm" id="figp" aria-label="Agrandir le schéma">${ic('plus')}</button><button class="btn sm" id="figx">${ic('x')}Fermer</button></div>
+  <div class="figzc"><div class="fig" id="figzi">${svg}</div></div></div>`;
+ document.body.appendChild(v);
+ let z=1;const zi=v.querySelector('#figzi'),pose=()=>{zi.style.setProperty('--z',z);v.querySelector('#figm').disabled=z<=1;v.querySelector('#figp').disabled=z>=3};
+ pose();
+ v.querySelector('#figp').onclick=()=>{z=Math.min(3,z+1);pose()};
+ v.querySelector('#figm').onclick=()=>{z=Math.max(1,z-1);pose()};
+ v.querySelector('#figx').onclick=fermerFigure;
+ v.onclick=e=>{if(e.target===v)fermerFigure()};
+ v.querySelector('#figx').focus()}
+document.addEventListener('click',e=>{const f=e.target.closest&&e.target.closest('.fig.zoom');if(f)agrandirFigure(f.innerHTML)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#figv'))fermerFigure();
+ else if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.classList&&e.target.classList.contains('zoom')){e.preventDefault();agrandirFigure(e.target.innerHTML)}});
 /* Tout lien [[…]], puce ou bouton data-n ouvre sa note : dans le panneau pendant une session
    ou depuis le panneau, sinon en pleine page dans le Cerveau. */
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-n]');if(!a)return;e.preventDefault();const id=a.dataset.n;if(!NOTES[id])return;
@@ -1507,8 +1642,8 @@ function monter3D(T,jeton){
  <div class="c3hint c3g" id="c3hint">${NA?'Chaque carte apprise allume sa note.':'Tout est éteint. Chaque carte apprise allumera sa note.'} Touche une note pour voir ses liens. Un doigt tourne, deux doigts zooment.</div>
  <aside class="c3fiche" id="c3fi" role="dialog" aria-label="Fiche de la note" hidden></aside>`;
  const offs=[],on=(el,ev,f,o)=>{el.addEventListener(ev,f,o);offs.push(()=>el.removeEventListener(ev,f,o))};
- let raf=0,R=null,ro=null,tIdle=0,tTap=0,tWheel=0;const mats=[],geos=[];
- G3.off=()=>{cancelAnimationFrame(raf);raf=0;clearTimeout(tIdle);clearTimeout(tTap);clearTimeout(tWheel);offs.forEach(f=>f());if(ro)ro.disconnect();
+ let raf=0,R=null,ro=null,tIdle=0,tWheel=0;const mats=[],geos=[];
+ G3.off=()=>{cancelAnimationFrame(raf);raf=0;clearTimeout(tIdle);clearTimeout(tWheel);offs.forEach(f=>f());if(ro)ro.disconnect();
   geos.forEach(g=>g.dispose());if(HL){HL.l.geometry.dispose();HL.p.geometry.dispose()}mats.forEach(m=>m.dispose());if(tex)tex.dispose();if(R){R.dispose();try{R.forceContextLoss()}catch(e){}}lay.remove();document.body.classList.remove('c3on')};
  document.body.appendChild(lay);document.body.classList.add('c3on');
  const cv=lay.querySelector('#c3cv'),st=lay.querySelector('#c3st'),labs=lay.querySelector('#c3lab'),fi=lay.querySelector('#c3fi'),sel=lay.querySelector('#c3f'),q=lay.querySelector('#c3q'),sug=lay.querySelector('#c3sug'),leg=lay.querySelector('#c3leg'),lb=lay.querySelector('#c3lb'),hint=lay.querySelector('#c3hint');
@@ -1571,7 +1706,10 @@ function monter3D(T,jeton){
 
  /* ---------- caméra en orbite : cible, azimut th, angle polaire ph (0 au zénith), distance r ---------- */
  const V0={th:.22,ph:.5};const O={x:0,y:0,z:0,th:V0.th,ph:V0.ph,r:5,vth:0,vph:0};
- const clPh=v=>Math.max(.12,Math.min(2.75,v)),wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+ /* hauteur de la caméra bornée : passer par dessus ou par dessous le cerveau retournait l'image
+    et on ne savait plus quel hémisphère on regardait. On garde un large débattement sans aller
+    jusqu'aux pôles. */
+ const clPh=v=>Math.max(.32,Math.min(2.45,v)),wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
  const base=(th,ph)=>{const sp=Math.sin(ph),d=[sp*Math.sin(th),Math.cos(ph),sp*Math.cos(th)],rl=Math.hypot(d[2],d[0])||1e-6,r=[d[2]/rl,0,-d[0]/rl],u=[d[1]*r[2]-d[2]*r[1],d[2]*r[0]-d[0]*r[2],d[0]*r[1]-d[1]*r[0]];return {d,r,u}};
  const poser=()=>{const {d}=base(O.th,O.ph);cam.position.set(O.x+O.r*d[0],O.y+O.r*d[1],O.z+O.r*d[2]);cam.lookAt(O.x,O.y,O.z);cam.updateMatrixWorld()};
  let W=1,H=1,TB=0,U={x:0,y:0,w:1,h:1};const OFF={x:0,y:0},OFFT={x:0,y:0};let fpx=1;
@@ -1620,6 +1758,9 @@ function monter3D(T,jeton){
     est de l'autre côté du cerveau, un recentrage sur le groupe (note plus voisines, pour que les
     liens tiennent dans l'image) et une distance qui reste de la même famille que l'actuelle. */
  function volNote(i,o){o=o||{};
+  /* Arrivé sur une note en zoomant dessus, on garde le cadrage que l'utilisateur vient de faire :
+     recadrer ici revenait à annuler son geste sous ses doigts. */
+  if(o.doux&&!o.force)return;
   const vis=ADJ[i].filter(j=>VIS[j]),ids=[i].concat(vis);
   const c=[0,0,0];ids.forEach(j=>{c[0]+=P[j*3];c[1]+=P[j*3+1];c[2]+=P[j*3+2]});c.forEach((v,k)=>c[k]=v/ids.length);
   proj();
@@ -1643,7 +1784,12 @@ function monter3D(T,jeton){
   const c=[0,0,0];ids.forEach(i=>{c[0]+=P[i*3];c[1]+=P[i*3+1];c[2]+=P[i*3+2]});c.forEach((v,k)=>c[k]=v/ids.length);
   let nx=0,ny=0,nz=0;ids.forEach(i=>{nx+=NRM[i*3];ny+=NRM[i*3+1];nz+=NRM[i*3+2]});const m=Math.hypot(nx,ny,nz);const o=m>.2*ids.length?dirVers(nx/m,ny/m,nz/m,.6):{th:O.th,ph:O.ph};
   voler({x:c[0],y:c[1],z:c[2],th:o.th,ph:o.ph,r:Math.min(7,ajuster(ids,c,o.th,o.ph))})}
- function versCours(k){if(SEL!=null)fermerFiche(true);FK=k;cibles();const ids=[];for(let i=0;i<n;i++)if(ci[i]===k&&VIS[i])ids.push(i);if(!ids.length)return;
+ /* Un seul chemin pour se poser sur un cours, quel que soit le bouton touché : la légende, le nom
+    de région posé sur le cerveau, ou le menu du haut. Sans cela on se retrouvait avec un filtre
+    actif que rien à l'écran n'expliquait. */
+ function choisirCours(k){filtrer(COURS[k].id,false);versCours(k)}
+ function majLegende(){leg.querySelectorAll('[data-k]').forEach(b=>b.classList.toggle('on',+b.dataset.k===FK))}
+ function versCours(k){if(SEL!=null)fermerFiche(true);FK=k;cibles();majLegende();const ids=[];for(let i=0;i<n;i++)if(ci[i]===k&&VIS[i])ids.push(i);if(!ids.length)return;
   const c=[CC[k*3],CC[k*3+1],CC[k*3+2]],o=dirVers(CN[k*3],CN[k*3+1],CN[k*3+2],.75);voler({x:c[0],y:c[1],z:c[2],th:o.th,ph:o.ph,r:Math.max(1.1,Math.min(3.4,ajuster(ids,c,o.th,o.ph)))})}
 
  /* ---------- sélection d'une note : fibres allumées, fiche, vol ---------- */
@@ -1657,9 +1803,9 @@ function monter3D(T,jeton){
  function choisir(i,o){o=o||{};if(i==null||i<0)return;if(!VIS[i])filtrer('tout',false);
   if(SEL===i){volNote(i,{force:true});return}
   if(SEL!=null&&!o.retour){FIL.push(SEL);if(FIL.length>60)FIL.shift()}
-  SEL=i;FK=null;CV.sel=NL[i].id;LIT=new Set(ADJ[i]);NUM.clear();voisines(i).forEach((j,k)=>NUM.set(j,k+1));
+  SEL=i;FK=null;majLegende();CV.sel=NL[i].id;LIT=new Set(ADJ[i]);NUM.clear();voisines(i).forEach((j,k)=>NUM.set(j,k+1));
   cibles();fibres(i);fiche(i);volNote(i,{force:!!o.force});eteindreAide()}
- function fermerFiche(garder){SEL=null;CV.sel=null;FIL=[];LIT=new Set();NUM.clear();fibres(null);fi.hidden=true;fi.classList.remove('max');lay.classList.remove('fo');if(!garder)cibles();zone()}
+ function fermerFiche(garder){SEL=null;CV.sel=null;FIL=[];LIT=new Set();NUM.clear();fibres(null);fi.hidden=true;fi.classList.remove('max');lay.classList.remove('fo','fmax');if(!garder)cibles();zone()}
  const court=(s,m)=>s.length>m?s.slice(0,m-1).replace(/\s+\S*$/,'')+'…':s;
  function fiche(i){const b=NL[i],c=COURS[ci[i]],col=couleurCours(c.id),ps=b.p||[];let acc=0,k=0;while(k<ps.length&&(k===0||acc<520)){acc+=plain(ps[k]).length;k++}
   const vois=voisines(i).map(j=>NL[j].id),prec=FIL.length?NL[FIL[FIL.length-1]]:null;
@@ -1672,7 +1818,7 @@ function monter3D(T,jeton){
   ${vois.length?`<h3 class="c3h3">${ic('link')}Notes liées · ${vois.length}</h3><p class="c3aide">Chaque numéro se retrouve sur le cerveau, posé sur la note.</p><div class="chips">${vois.map((id,k)=>{const x=NOTES[id],cc=coursOf(x.li);return `<button class="chip" data-v="${id}"><b class="c3num">${k+1}</b><i class="cdot" style="background:${couleurCours(cc.id)}"></i>${x.h}<small>${esc(cc.id)}</small></button>`}).join('')}</div>`:''}`;
   const first=fi.hidden;fi.hidden=false;fi.scrollTop=0;lay.classList.add('fo');if(!first)fi.style.animation='none';else fi.style.animation='';
   fi.querySelector('#c3x').onclick=()=>fermerFiche();const f=fi.querySelector('#c3fil');if(f)f.onclick=()=>{const j=FIL.pop();if(j!=null)choisir(j,{retour:true})};
-  fi.querySelector('#c3gr').onclick=()=>{fi.classList.toggle('max');setTimeout(zone,320)};
+  fi.querySelector('#c3gr').onclick=()=>{fi.classList.toggle('max');lay.classList.toggle('fmax',fi.classList.contains('max'));setTimeout(zone,320)};
   fi.querySelector('#c3open').onclick=()=>ouvrirNote(b.id);
   fi.querySelector('#c3learn').onclick=()=>{const cs=cartesNote(b.id);if(!cs.length){toast(ic('info')+'Aucune carte pour cette note');return}const nv=cs.filter(x=>!S.sr[x.id]),du=cs.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=tN()),l=nv.concat(du);stop3D();
    l.length?reviser(l.map(x=>x.id),{titre:'Note · '+plain(b.h)})
@@ -1683,8 +1829,8 @@ function monter3D(T,jeton){
 
  /* ---------- filtre ---------- */
  function filtrer(sc,vol){CV.scope=sc;sel.value=sc;const ok=new Set(portee(sc).map(b=>b.id));NKV.fill(0);for(let i=0;i<n;i++){VIS[i]=ok.has(NL[i].id)?1:0;if(VIS[i])NKV[ci[i]]++}
-  if(SEL!=null&&!VIS[SEL])fermerFiche(true);FK=null;cibles();if(vol!==false)vue()}
- sel.onchange=()=>{filtrer(sel.value);eteindreAide()};
+  if(SEL!=null&&!VIS[SEL])fermerFiche(true);FK=null;majLegende();cibles();if(vol!==false)vue()}
+ sel.onchange=()=>{filtrer(sel.value);majLegende();eteindreAide()};
 
  /* ---------- recherche ---------- */
  let qT=0,SUG=[];
@@ -1694,11 +1840,22 @@ function monter3D(T,jeton){
  q.onkeydown=e=>{if(e.key==='Enter'&&SUG.length){e.preventDefault();aller(SUG[0])}else if(e.key==='Escape'){q.value='';sug.hidden=true;q.blur()}};
  sug.onclick=e=>{const b=e.target.closest('[data-s]');if(b)aller(SUG[+b.dataset.s])};
  lb.onclick=()=>{leg.hidden=!leg.hidden;lb.setAttribute('aria-expanded',String(!leg.hidden));sug.hidden=true};
- leg.onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;if(W<700){leg.hidden=true;lb.setAttribute('aria-expanded','false')}if(!VIS.some((v,i)=>v&&ci[i]===+b.dataset.k))filtrer('tout',false);versCours(+b.dataset.k)};
+ /* Choisir un cours dans la légende et le choisir dans le menu du haut faisaient deux choses
+    différentes : l'un éclairait sans rien cacher, l'autre cachait le reste. On ne pouvait pas
+    savoir dans quel état on était ni comment en sortir. Les deux font maintenant la même chose,
+    et le menu du haut montre toujours où on en est : « Toutes les notes » ramène tout. */
+ leg.onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;
+  if(W<700){leg.hidden=true;lb.setAttribute('aria-expanded','false')}
+  choisirCours(+b.dataset.k)};
  lay.querySelector('#c3back').onclick=()=>cvRetour();
- lay.querySelector('#c3zp').onclick=()=>{voler({r:Math.max(.3,O.r/1.45)},380);setTimeout(apresZoom,420)};
+ /* Le bouton zoom ne fait que zoomer. Il ouvrait la fiche de la note la plus proche une fois
+    assez près, ce qui surgissait sans qu'on ait rien demandé. Le pincement et la molette gardent
+    ce raccourci : là, on vise vraiment quelque chose. */
+ lay.querySelector('#c3zp').onclick=()=>voler({r:Math.max(.3,O.r/1.45)},380);
  lay.querySelector('#c3zm').onclick=()=>voler({r:Math.min(10,O.r*1.45)},380);
- lay.querySelector('#c3fit').onclick=()=>{if(SEL!=null)fermerFiche(true);FK=null;cibles();vue()};
+ /* « Recentrer sur tout le cerveau » lève aussi le filtre : depuis que choisir un cours cache
+    vraiment les autres notes, un bouton qui recadre sans tout remontrer ment sur son nom. */
+ lay.querySelector('#c3fit').onclick=()=>{if(SEL!=null)fermerFiche(true);FK=null;filtrer('tout',false);majLegende();vue()};
 
  /* ---------- étiquettes HTML projetées ---------- */
  const CL=COURS.map((c,k)=>{const d=document.createElement('div');d.className='c3c';d.dataset.k=k;d.innerHTML=`<b style="color:${COLH[k]}">${esc(c.id)}</b><span>${esc(COURT[c.id]||c.t)}</span>`;labs.appendChild(d);return {el:d,w:0,h:0,wm:0,hm:0,mini:false,o:-1,tf:''}});
@@ -1830,7 +1987,7 @@ function monter3D(T,jeton){
   G3.images=(G3.images||0)+1;if(act)demande()}
 
  /* ---------- gestes : un doigt tourne (avec inertie), deux doigts pincent et déplacent, molette vers le pointeur ---------- */
- const PTR=new Map();let g0=null,moved=0,tDown=0,down=null,pinch=null,panM=false,tLast=0,lastTap=0,lastXY=null;
+ const PTR=new Map();let g0=null,moved=0,tDown=0,down=null,pinch=null,panM=false,tLast=0;
  const pos=e=>{const r=st.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
  const wpp=()=>O.r/fpx;
  const panPx=(dx,dy)=>{const {r,u}=base(O.th,O.ph),k=wpp();O.x+=(-dx*r[0]+dy*u[0])*k;O.y+=(-dx*r[1]+dy*u[1])*k;O.z+=(-dx*r[2]+dy*u[2])*k;O.x=Math.max(-1.5,Math.min(1.5,O.x));O.y=Math.max(-1.1,Math.min(1.1,O.y));O.z=Math.max(-1.6,Math.min(1.6,O.z))};
@@ -1839,14 +1996,19 @@ function monter3D(T,jeton){
  function eteindreAide(){hint.classList.add('off');UIB=null}
  function toucher(){IDLE=null;eteindreAide();clearTimeout(tIdle);if(!RM)tIdle=setTimeout(()=>{if(G3&&G3.jeton===jeton&&SEL==null&&!PTR.size&&!FLY){IDLE={t0:performance.now(),th:O.th,ph:O.ph,r:O.r};demande()}},20000)}
  /* tout près d'une note (après un zoom), sa fiche s'ouvre */
- function apresZoom(){if(O.r>.85)return;let best=-1,bd=1e9;const cxU=W/2-OFF.x,cyU=H/2-OFF.y;proj();for(let i=0;i<n;i++){if(!VIS[i]||SW[i]<=.01||FC[i]<0)continue;const d=Math.hypot(SX[i]-cxU,SY[i]-cyU);if(d<bd){bd=d;best=i}}if(best>=0&&bd<90&&best!==SEL)choisir(best,{doux:true})}
+ function apresZoom(){if(O.r>.8)return;let best=-1,bd=1e9;const cxU=W/2-OFF.x,cyU=H/2-OFF.y;proj();for(let i=0;i<n;i++){if(!VIS[i]||SW[i]<=.01||FC[i]<0)continue;const d=Math.hypot(SX[i]-cxU,SY[i]-cyU);if(d<bd){bd=d;best=i}}if(best>=0&&bd<60&&best!==SEL)choisir(best,{doux:true})}
  function viser(x,y){let best=-1,bs=1e9;for(let i=0;i<n;i++){if(!VIS[i]||SW[i]<=.01)continue;const d=Math.hypot(SX[i]-x,SY[i]-y),rr=Math.max(22,ST[i]*fpx/SW[i]*.22);if(d>rr)continue;const s=d/rr+(FC[i]<0?.7:0)+(SEL!=null&&AC[i]<.5?.2:0);if(s<bs){bs=s;best=i}}return best}
- function tap(p,tg){const now=performance.now(),dbl=now-lastTap<330&&lastXY&&Math.hypot(p[0]-lastXY[0],p[1]-lastXY[1])<34;lastTap=dbl?0:now;lastXY=p;clearTimeout(tTap);
-  if(dbl){if(SEL!=null)fermerFiche(true);FK=null;cibles();vue();return}
+ /* Une touche fait une chose, et tout de suite. Le raccourci qui recentrait tout au double
+    toucher a été retiré :
+    deux touches rapprochées suffisaient, même sur deux notes différentes, et la vue repartait au
+    point de départ sans prévenir. Il obligeait aussi à attendre 340 ms avant de fermer une fiche.
+    Recentrer reste sur le bouton cible, qui, lui, est visible. */
+ function tap(p,tg){
   const nl=tg&&tg.closest&&tg.closest('.c3n.on'),cl=tg&&tg.closest&&tg.closest('.c3c.on');
-  if(nl){hap('tap');choisir(+nl.dataset.i);return}if(cl){hap('tap');versCours(+cl.dataset.k);return}
+  if(nl){hap('tap');choisir(+nl.dataset.i);return}
+  if(cl){hap('tap');choisirCours(+cl.dataset.k);return}
   proj();const i=viser(p[0],p[1]);if(i>=0){hap('tap');choisir(i);return}
-  tTap=setTimeout(()=>{if(!G3||G3.jeton!==jeton)return;if(SEL!=null)fermerFiche();else if(FK!=null){FK=null;cibles()}},340)}
+  if(SEL!=null)fermerFiche();else if(FK!=null){FK=null;majLegende();cibles()}}
  on(st,'pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0&&e.button!==2)return;try{st.setPointerCapture(e.pointerId)}catch(_){}PTR.set(e.pointerId,pos(e));toucher();sug.hidden=true;if(document.activeElement===q)q.blur();
   if(PTR.size===1){g0=pos(e);moved=0;tDown=performance.now();down=e.target;panM=e.button===2||e.shiftKey||e.metaKey||e.ctrlKey;O.vth=O.vph=0;FLY=null}
   else if(PTR.size===2){const [a,b]=[...PTR.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,r:O.r,m:[(a[0]+b[0])/2,(a[1]+b[1])/2]};moved=99;FLY=null}});
@@ -1855,12 +2017,14 @@ function monter3D(T,jeton){
   if(PTR.size>=2&&pinch){const [a,b]=[...PTR.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1])||1,m=[(a[0]+b[0])/2,(a[1]+b[1])/2];zoomA(pinch.r*pinch.d/d/O.r,m[0],m[1]);panPx(m[0]-pinch.m[0],m[1]-pinch.m[1]);pinch.m=m;demande();return}
   if(!g0)return;moved=Math.max(moved,Math.hypot(p[0]-g0[0],p[1]-g0[1]));if(moved<7)return;
   if(panM)panPx(dx,dy);else{const k=Math.PI/Math.max(300,Math.min(W,H)),a=-dx*k,b=-dy*k;O.th+=a;O.ph=clPh(O.ph+b);O.vth=O.vth*.4+a*.6;O.vph=O.vph*.4+b*.6;tLast=performance.now()}demande()});
- const fin=e=>{if(!PTR.has(e.pointerId))return;PTR.delete(e.pointerId);if(pinch&&PTR.size<2){pinch=null;g0=null;O.vth=O.vph=0;apresZoom()}
+ const fin=e=>{if(!PTR.has(e.pointerId))return;PTR.delete(e.pointerId);
+  /* Deux doigts servent aussi à déplacer la vue sans changer l'échelle : dans ce cas on n'ouvre
+     rien. La fiche ne s'ouvre que si on a vraiment zoomé, d'au moins un sixième. */
+  if(pinch&&PTR.size<2){const zoome=Math.abs(O.r-pinch.r)/pinch.r>.16;pinch=null;g0=null;O.vth=O.vph=0;if(zoome)apresZoom()}
   if(!PTR.size&&g0){const p=pos(e);if(moved<8&&performance.now()-tDown<450)tap(p,down);else if(performance.now()-tLast>90)O.vth=O.vph=0;g0=null;demande()}};
  on(st,'pointerup',fin);on(st,'pointercancel',fin);on(st,'pointerleave',()=>{if(HOV>=0&&!PTR.size){HOV=-1;st.style.cursor='';demande()}});
  on(st,'contextmenu',e=>e.preventDefault());
  on(st,'wheel',e=>{e.preventDefault();toucher();FLY=null;const p=pos(e),d=e.deltaMode===1?e.deltaY*16:e.deltaY;zoomA(Math.exp(Math.max(-60,Math.min(60,d))*(e.ctrlKey?.01:.0017)),p[0],p[1]);demande();clearTimeout(tWheel);tWheel=setTimeout(apresZoom,260)},{passive:false});
- on(document,'gesturestart',e=>e.preventDefault());
  on(window,'keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||''))return;const k=e.key;
   if(k==='Escape'){if(!leg.hidden){leg.hidden=true;lb.setAttribute('aria-expanded','false')}else if(SEL!=null)fermerFiche();return}
   const m={ArrowLeft:[.14,0],ArrowRight:[-.14,0],ArrowUp:[0,.12],ArrowDown:[0,-.12]}[k];if(m&&!e.target.closest('.c3fiche')){e.preventDefault();toucher();O.th+=m[0];O.ph=clPh(O.ph+m[1]);demande();return}
@@ -2031,7 +2195,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v16"></script>
-<script src="acces.js?v=bq5-v16"></script>
+<script src="entrainement.js?v=bq5-v17"></script>
+<script src="acces.js?v=bq5-v17"></script>
 </body>
 </html>
