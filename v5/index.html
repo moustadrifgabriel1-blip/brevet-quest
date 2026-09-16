@@ -812,7 +812,7 @@ function expr(s){let out='',i=0;while(i<s.length){const c=s[i];
  return sup(sub(out))}
 function formula(s){return splitTop(s,/^\s[=≈]\s/).map((seg,k)=>k%2?seg:splitTop(seg,/^\s[+−]\s/).map((t,j)=>j%2?t:term(t)).join('')).join('')}
 const SENT=/[^.;!?]+(?:[.;!?]+|$)/g;
-return html.split(/(<[^>]+>)/).map((p,k)=>{if(k%2)return p;return p.replace(SENT,s=>/[=≈]/.test(s)||/[√^]|\d\/\d/.test(s)?formula(s):s)}).join('')}
+return html.split(/(<[^>]+>)/).map((p,k)=>{if(k%2)return p;return p.replace(SENT,s=>/[=≈]/.test(s)||/[√^]|(?<![A-Z]{2,} ?\d*)\d\/\d/.test(s)?formula(s):s)}).join('')}
 
 
 /* ===================== CONTENU : NOTES, QUESTIONS, CARTES ===================== */
@@ -2299,7 +2299,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v20"></script>
-<script src="acces.js?v=bq5-v20"></script>
+<script src="entrainement.js?v=bq5-v21"></script>
+<script src="acces.js?v=bq5-v21"></script>
 </body>
 </html>
