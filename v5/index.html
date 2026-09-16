@@ -1170,6 +1170,15 @@ function noter(id,g){const avant=S.sr[id];newDay();
 /* Ramener une carte à demain, à la demande : le seul chemin qui raccourcit une échéance. */
 function ramener(ids){const t=tN();ids.forEach(id=>{const r=S.sr[id];if(r&&r.due>t+1)r.due=t+1});save()}
 const gradeBtns=(id,gs)=>`<div class="grades">${gs.map(g=>`<button class="g${g}" data-g="${g}">${NOMS[g]}<small>${ivTxt(id,g)}</small></button>`).join('')}</div>`;
+/* Commentaires : un mail à Gab, préparé avec la carte en cours. mailto ouvre Mail ; l'app iOS laisse
+   sortir ce lien (App.swift). Aucun serveur, rien de stocké. */
+const MAIL='moustadrifgabriel1@gmail.com';
+const versApp=()=>(((document.querySelector('script[src*="acces.js?v="]')||{}).src||'').replace(/.*v=/,''))||'?';
+function commenter(txt,sujet){location.href='mailto:'+MAIL+'?subject='+encodeURIComponent(sujet||'Brevet Quest · commentaire')+'&body='+encodeURIComponent((txt||'')+'\n\n('+versApp()+', '+navigator.platform+')')}
+const btnCom=x=>`<button class="btn ghost sm" data-com="${x.id}" style="margin-top:8px;margin-left:6px">${ic('info')}Commenter</button>`;
+document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-com],#com-go');if(!c)return;
+ if(c.id==='com-go'){const t=($('#com')||{}).value||'';if(!t.trim()){toast('Écris d\'abord ton commentaire');return}return commenter(t)}
+ const x=ITEM[c.dataset.com],q=x?(x.kind==='k'?plain(x.txt):plain(x.q.q)):'';commenter('Carte '+(x?x.id+' (ch. '+x.li+')':'')+'\n« '+q+' »\n\nMon commentaire : ','Brevet Quest · carte '+(x?x.id:''))});
 /* Escalier de rappel par carte : 0 découverte (format d'origine), 1 texte à trous sur la bonne réponse,
    2 réponse libre, 3 « explique le comme à un apprenti ». Le niveau vit dans S.sr[id].lv (lp compte les
    réussites depuis le dernier palier). Une carte vue avant l'escalier compte au niveau 1. */
@@ -1240,7 +1249,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
      const aide=TR.K[t]==='nombre'?(u?'… '+esc(u):nb+' chiffre'+(nb>1?'s':'')):esc(r.slice(0,1))+' …';
      e.innerHTML=`<i class="tn">${t+1}</i><span class="ta">${aide}</span>`});$('#indice').disabled=true};
    $('#flip').onclick=()=>{app.querySelectorAll('.trou').forEach((e,k)=>{e.textContent=TR.R[+e.dataset.t];e.classList.add('vu');e.style.animationDelay=k*70+'ms';e.removeAttribute('aria-label')});
-    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b><div>${fx(x.q.e)}</div></div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>`;
+    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b><div>${fx(x.q.e)}</div></div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>${btnCom(x)}`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
@@ -1249,7 +1258,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
    <textarea class="mine" id="libre" rows="3" placeholder="Ta réponse, au clavier ou à voix haute" aria-label="Ta réponse"></textarea><div id="micro"></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Révéler la réponse</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();const stopMic=enregistreur($('#micro'));
-   $('#flip').onclick=()=>{$('#libre').readOnly=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b><div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button></div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
+   $('#flip').onclick=()=>{$('#libre').readOnly=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b><div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${btnCom(x)}</div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{stopMic();const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok,q);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(6)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
@@ -1270,7 +1279,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
    let act='';
    if(o.examen||!ok){const av=o.libre?false:noter(x.id,ok?3:1);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);act=`<div class="nav" style="justify-content:flex-end"><button class="btn" id="nx">${i<list.length-1?'Suivant':'Bilan'}${ic('chevR')}</button></div>`}
    else act=gradeBtns(x.id,dt<8?[2,3,4]:[2,3])+(dt<8?`<p class="fast">Réponse en ${Math.max(1,Math.round(dt))} s : Facile est proposé.</p>`:'');
-   $('#fb').innerHTML=`<div class="fb${ok?' ok':''}"><b>${ok?'Exact · +6 XP':'Raté'+tx}</b>${ex}<div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${ok?'':leech(x)}</div>${act}`;
+   $('#fb').innerHTML=`<div class="fb${ok?' ok':''}"><b>${ok?'Exact · +6 XP':'Raté'+tx}</b>${ex}<div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${btnCom(x)}${ok?'':leech(x)}</div>${act}`;
    const nb=$('#nx');if(nb)nb.onclick=suivant;
    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g;const av=o.libre?false:noter(x.id,g);if(av&&g===1&&protege.indexOf(x.id)<0)protege.push(x.id);suivant()});
    const fbx=$('#fb');fbx&&fbx.scrollIntoView({block:'nearest',behavior:'smooth'})};
@@ -2237,6 +2246,7 @@ function profil(){const r=rank(),all=TOUS(),E=compteEtats(all),vus=all.length-E.
  <label class="row"><span>Heure</span><input type="time" id="nheure" class="field" style="width:auto;font-size:16px;padding:8px 12px" value="${String(S.notif.h).padStart(2,'0')}:${String(S.notif.m).padStart(2,'0')}"></label>
  <p id="nfb" style="font-size:13px;color:var(--ok);margin:10px 0 0;min-height:18px"></p></div>`:`<div class="card"><div class="eyebrow">Rappel quotidien</div><p style="color:var(--ink2);font-size:14.5px;margin:0">Les rappels passent par l'app iPhone ou Android. Ici, ils ne sont pas disponibles.</p></div>`}
  ${CLOUD?`<div class="card"><div class="eyebrow">Sauvegardes</div><p style="color:var(--ink2);font-size:14.5px;margin:0 0 10px">Une copie datée par jour dans ton iCloud Drive (30 jours) et une copie de secours hebdomadaire dans iCloud : elles survivent à une réinstallation. Restaurer ne remplace rien : la sauvegarde est fusionnée avec ta progression actuelle.</p><div id="sauvl">${sauvHtml()}</div></div>`:''}
+ <div class="card"><div class="eyebrow">Commentaires</div><p style="color:var(--ink2);font-size:14.5px;margin:0 0 10px">Une erreur dans une carte, une idée, un truc qui agace : écris le ici, ça part par mail à Gab.</p><textarea class="mine" id="com" rows="4" placeholder="Ton commentaire" aria-label="Commentaire"></textarea><button class="btn sm" id="com-go" style="margin-top:8px">${ic('info')}Envoyer par mail</button></div>
  <div class="card"><div class="eyebrow">Sauvegarde</div><p style="color:var(--ink2);font-size:14.5px;margin:0 0 10px">${CLOUD?'Ta progression se synchronise avec iCloud entre tes appareils. ':''}Exporte de temps en temps une copie texte dans une note : c'est ton filet de sécurité.</p><div class="alts"><button class="btn ghost" id="exp">Exporter</button><button class="btn ghost" id="imp">Importer</button><button class="btn red" id="reset">Réinitialiser</button></div></div>
  <details class="card fold"><summary>Sources officielles</summary><p style="color:var(--ink2);font-size:14px;margin:6px 0 8px">Application privée d'entraînement, sans lien avec la Confédération, l'ESTI, la Suva, la CFST ou l'AES. Les textes cités se consultent dans leur version officielle :</p><div style="display:flex;flex-direction:column;gap:8px;font-size:14.5px">${SOURCES.map(s=>`<a class="lnk" target="_blank" rel="noopener" href="${s[0]}">${s[1]}</a>`).join('')}</div></details>
  <details class="card fold"><summary>Erreurs récentes (${(S.err||[]).length})</summary>${(S.err||[]).length?`<div style="font-size:13.5px">${S.err.slice().reverse().map(e=>`<div class="qrow"><span>${esc(e.m)}<br><small style="color:var(--ink2)">${new Date(e.t).toLocaleString('fr-CH')} · ${esc(e.v||'')}${e.l?' · ligne '+e.l:''}</small></span></div>`).join('')}</div><button class="btn ghost sm" id="errclr" style="margin-top:8px">Effacer le journal</button>`:'<p class="eyebrow">Aucune erreur enregistrée.</p>'}</details>
@@ -2289,7 +2299,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v19"></script>
-<script src="acces.js?v=bq5-v19"></script>
+<script src="entrainement.js?v=bq5-v20"></script>
+<script src="acces.js?v=bq5-v20"></script>
 </body>
 </html>
