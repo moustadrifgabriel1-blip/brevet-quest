@@ -417,7 +417,7 @@ const jx=()=>dayN(EXAMEN)-tN();
 /* Clé unique bq1, S.v = 3 (cartes FSRS). Au démarrage : copie de sécurité de la v2, migration,
    import de Mesure Quest (mq2). Rien n'est jamais effacé : les champs inconnus sont gardés. */
 const SKEY='bq1';
-const DEF={v:3,xp:0,coins:0,done:{},sr:{},fr:{},streak:{last:'',n:0,best:0,ms:0},day:{d:'',n:0,ok:0,goal:false,nw:0},notif:{on:true,h:19,m:30},goal:20,nq:10,freeze:0,sfx:true,hap:true,hist:{},quests:{d:'',l:[]},lastOpen:'',rankSeen:'',
+const DEF={v:3,xp:0,coins:0,done:{},sr:{},fr:{},rc:{},susp:{},cf:{},streak:{last:'',n:0,best:0,ms:0},day:{d:'',n:0,ok:0,goal:false,nw:0},notif:{on:true,h:19,m:30},goal:20,nq:10,freeze:0,sfx:true,hap:true,hist:{},quests:{d:'',l:[]},lastOpen:'',rankSeen:'',
  notes:{},notesTs:{},log:[],ret:{},err:[],cas:true,conf:{sais:[0,0],hesite:[0,0],devine:[0,0]},lect:{t:17,lh:1.5,w:65,hc:false,f:'sys'},ts:0};
 /* Fusion en profondeur : un sous-objet sauvegardé ne remplace jamais le défaut en bloc,
    sinon tout nouveau champ (lect.w, day.nw…) arriverait à undefined. */
@@ -454,6 +454,9 @@ function fusionEtat(a,b){
  o.done=unir(a.done,b.done,maxChamps);
  o.hist=unir(a.hist,b.hist,histGagne);
  o.ret=unir(a.ret,b.ret,(x,y)=>[Math.max(nb(x&&x[0]),nb(y&&y[0])),Math.max(nb(x&&x[1]),nb(y&&y[1]))]);
+ o.rc=unir(a.rc,b.rc,(x,y)=>[Math.max(nb(x&&x[0]),nb(y&&y[0])),Math.max(nb(x&&x[1]),nb(y&&y[1]))]);
+ o.susp=unir(a.susp,b.susp,(x,y)=>x||y);
+ o.cf=unir(a.cf,b.cf,(x,y)=>Math.max(nb(x),nb(y)));
  /* Notes personnelles : le texte le plus récent d'après notesTs ; sans horodatage, le plus long,
     parce qu'une note s'allonge au fil des révisions et qu'on ne veut jamais raboter du texte écrit. */
  const ta=a.notesTs||{},tb=b.notesTs||{};
@@ -644,8 +647,11 @@ function raccourciQuete(k){const t=tN();
  if(k==='num'){const n=ALLQ.filter(x=>x.q.t==='num'),a=n.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=t),b=n.filter(x=>!S.sr[x.id]&&chapVu(x.li));
   return reviser(shuffle(a).concat(shuffle(b),shuffle(n)).map(x=>x.id).filter((v,i,s)=>s.indexOf(v)===i).slice(0,8),{titre:'Quête · calculs'})}
  if(k==='recite')return recite(frDue().slice(0,5));
- if(k==='brief'){const f=fileDuJour(),id=f.nv.concat(f.auj,f.retard).map(i=>ITEM[i]).find(x=>x&&x.b);return ouvrirNote((id&&id.b.id)||NL[Math.floor(Math.random()*NL.length)].id)}
- if(k==='lien'){const vu=NL.filter(b=>chapVu(b.li)&&(b.liens||[]).length>=3);const b=(vu.length?vu:NL.filter(b=>(b.liens||[]).length>=3))[0]||NL[0];return ouvrirNote(b.id)}
+ /* Une note différente à chaque fois, et d'abord un point faible : parmi les notes vues, les cinq les
+    moins lumineuses (cartes ratées ou pâlies) hors des dix dernières ouvertes par une quête, au hasard. */
+ if(k==='brief'||k==='lien'){const lu=lumieres(),rec=S.qvu||[];let c=NL.filter(b=>chapVu(b.li)&&(k!=='lien'||(b.liens||[]).length>=3)&&!rec.includes(b.id));
+  if(!c.length)c=NL.filter(b=>k!=='lien'||(b.liens||[]).length>=3);c.sort((a,b)=>lu[a.id]-lu[b.id]);
+  const b=c[Math.floor(Math.random()*Math.min(5,c.length))]||NL[0];S.qvu=rec.concat(b.id).slice(-10);save({ts:false});return ouvrirNote(b.id)}
  /* rien à réviser aujourd'hui : un entraînement mélangé fait quand même avancer la quête */
  const f=fileDuJour();if(!f.retard.length&&!f.auj.length&&!f.nv.length)return examenBlanc(-1);
  lancerFile()}
@@ -815,6 +821,15 @@ const NOTES={},NL=[],BACK={},QBYNOTE={},ITEM={},ALLQ=[];
 for(let li=1;li<=NCH;li++){const c=L[li];c.b.forEach((b,idx)=>{b.li=li;b.idx=idx;NOTES[b.id]=b;NL.push(b)});
  c.q.forEach(q=>{if(!q.id)q.id=li+'-'+hash(q.q);const x={id:q.id,kind:'q',li,q,b:NOTES[q.note]||c.b[0]};ITEM[q.id]=x;ALLQ.push(x);(QBYNOTE[x.b.id]=QBYNOTE[x.b.id]||[]).push(x)})}
 const TOTALQ=ALLQ.length;
+/* Cartes de contraste : deux cartes du même chapitre ratées dans la même séance à deux reprises au
+   moins (S.cf, compté au bilan) donnent une carte « quelle est la différence ? » qui pose les deux
+   questions côte à côte, en réponse libre, verso les deux réponses. Créée due aujourd'hui. */
+const contrasteTitre=q=>q.t==='carte'&&/ : de quoi s'agit-il \?$/.test(q.q)?q.q.replace(/ : de quoi s'agit-il \?$/,''):fx(q.q);
+function contrastes(){let n=0;for(const k in S.cf||{}){const id='c-'+k;if(S.cf[k]<2||ITEM[id])continue;const [a,b]=k.split('|').map(i=>ITEM[i]);if(!a||!b||a.kind!=='q'||b.kind!=='q')continue;
+ const ta=contrasteTitre(a.q),tb=contrasteTitre(b.q);
+ ITEM[id]={id,kind:'q',li:a.li,b:a.b,q:{t:'carte',q:'Tu confonds ces deux là. Quelle est la différence entre « '+ta+' » et « '+tb+' » ? Réponds aux deux.',r:'<b>'+ta+'</b> : '+bonne(a.q)+'<br><b>'+tb+'</b> : '+bonne(b.q),e:fx(a.q.e)+' '+fx(b.q.e),src:a.q.src}};
+ if(!S.sr[id]){S.sr[id]=FSRS.init();n++}}
+ if(n)save({ts:false});return n}
 /* Rétroliens : calculés au chargement à partir des liens sortants. */
 NL.forEach(b=>(b.liens||[]).forEach(t=>{if(NOTES[t]&&t!==b.id)(BACK[t]=BACK[t]||[]).includes(b.id)||BACK[t].push(b.id)}));
 const coursOf=li=>COURS.find(c=>c.l.includes(li))||{id:L[li].cours||'',t:''};
@@ -862,7 +877,14 @@ const NUMRE=new RegExp(N1+"(?:\\s?(?:à|ou|et|×|x)\\s?"+N1+")*","g");
 const MARQUE=/<b>([\s\S]*?)(?:<\/b>|$)|\[\[[^|\]]+\|([^\]]*?)\]\]/g;
 const VIDE=/^(le|la|les|l'|un|une|des|du|de|d'|au|aux|à|en|et|ou|ni|par|pour|sur|dans|avec|sans|ce|cet|cette|ces|son|sa|ses|leur|leurs|qui|que|qu'|dont|où|il|elle|ils|elles|on|y|se|s'|ne|n'|pas|plus|très|tout|tous|toute|toutes|est|sont|car|mais|donc|si|entre|selon|comme|aussi|alors|chaque|même|faut|doit|peut|autre|autres|celui|celle|après|avant|projet|ensuite|surtout|toujours|jamais)$/i;
 const nbMots=s=>plain(s).split(/\s+/).filter(Boolean).length;
-const bonTrou=s=>{const v=plain(s).trim();return v.length>1&&nbMots(v)<=MAXMOTS&&!VIDE.test(v)};
+/* Un trou porte sur une vraie notion, pas sur une tournure : « Dans l'intervalle » ou « prennent du temps »
+   restent dans la phrase. Passe : une valeur ; un terme du lexique (relié, ou mis en gras par deux notes au
+   moins) ; un groupe qui contient un terme du lexique. Jamais un groupe qui commence par une préposition ou
+   un connecteur. */
+const CONNECT=/^(dans|en|par|pour|sur|avec|sans|selon|après|avant|sous|entre|depuis|lors|pendant|ainsi|donc|alors|puis|ensuite|toujours|jamais|souvent|parfois|aussi|très|plus|moins|au|aux|à|de|du|des)\b/i;
+const notion=r=>{const v=plain(r).toLowerCase().replace(/[.,;:!?]+$/,'').trim();if(/\d/.test(v))return true;if(CONNECT.test(v))return false;
+ if(LEXN[v]>=2)return true;return LEXTROU.some(t=>t!==v&&(' '+v+' ').includes(' '+t+' '))};
+const bonTrou=s=>{const v=plain(s).trim();return v.length>1&&nbMots(v)<=MAXMOTS&&!VIDE.test(v)&&notion(v)};
 /* le genre suit la réponse, pas le chemin qui l'a trouvée : « 85 % » reste une valeur */
 const genre=r=>/^[\d±−-]/.test(plain(r).trim())?'nombre':'terme';
 /* les balises retirées laissent des espaces parasites. On ne touche pas à l'espace qui précède
@@ -939,9 +961,12 @@ function lumieres(){const t=tN(),o={},ch={};NL.forEach(b=>{const cs=cartesNote(b
  NL.forEach(b=>{if(o[b.id]==null){const a=ch[b.li]||[];o[b.id]=a.length?a.reduce((x,y)=>x+y,0)/a.length:0}});return o}
 const allumees=lu=>NL.filter(b=>lu[b.id]>=LUM_ON).length;
 const ETAT={new:'nouvelle',cours:'en cours',anc:'ancrée',frag:'fragile'};
-function dues(){const t=tN(),g={};for(const id in S.sr){const r=S.sr[id];if(ITEM[id]&&r&&r.due<=t)(g[r.due]=g[r.due]||[]).push(id)}
+function dues(){const t=tN(),g={};for(const id in S.sr){const r=S.sr[id];if(ITEM[id]&&r&&r.due<=t&&!S.susp[id])(g[r.due]=g[r.due]||[]).push(id)}
  /* par échéance, puis mélangées à l'intérieur d'un même jour : pas de bloc d'un seul chapitre */
- return Object.keys(g).map(Number).sort((a,b)=>a-b).flatMap(k=>shuffle(g[k]))}
+ const o=Object.keys(g).map(Number).sort((a,b)=>a-b).flatMap(k=>shuffle(g[k]));
+ /* entrelacement : jamais deux cartes du même chapitre à la suite quand une autre carte peut prendre la place */
+ for(let i=1;i<o.length;i++){const li=ITEM[o[i-1]].li;if(ITEM[o[i]].li!==li)continue;const j=o.findIndex((id,k)=>k>i&&ITEM[id].li!==li);if(j>0){const t=o[i];o[i]=o[j];o[j]=t}}
+ return o}
 const chapVu=li=>!!S.done[li]||cartesChap(li).some(x=>S.sr[x.id]);
 const chapFini=li=>cartesChap(li).every(x=>S.sr[x.id]);
 /* Prochain chapitre non fini : d'abord un chapitre commencé, sinon le premier jamais ouvert. */
@@ -1132,14 +1157,33 @@ const ivTxt=(id,g)=>{const t=tN();return ivJours(FSRS.review(S.sr[id],g,t,{fuzz:
    L'échec est enregistré (f) et la carte est proposée en fin de séance : c'est Gab qui décide de
    la ramener, avec « Ramener à demain ». Une carte réellement due, elle, suit FSRS sans réserve. */
 function noter(id,g){const avant=S.sr[id];newDay();
+ const ci=ITEM[id];if(ci){const c=S.rc[ci.li]||[0,0];c[1]++;if(g>1)c[0]++;S.rc[ci.li]=c}
  if(!avant)S.day.nw=(S.day.nw||0)+1;else{const k=today(),r=S.ret[k]||[0,0];r[1]++;if(g>1)r[0]++;S.ret[k]=r}
  const t=tN(),apres=FSRS.review(avant,g,t,{id,ret:retDe(id)});
+ /* escalier de rappel : première rencontre vers le niveau 1 ; ensuite un niveau de plus après deux
+    réussites de suite, un niveau de moins sur échec, jamais sous 1 (plus jamais de QCM seul) */
+ const lv=niveau(avant),lp=avant&&avant.lp||0;
+ if(!avant){apres.lv=1;apres.lp=0}else if(g===1){apres.lv=Math.max(1,lv-1);apres.lp=0}else if(lp+1>=2&&lv<3){apres.lv=lv+1;apres.lp=0}else{apres.lv=lv;apres.lp=lp+1}
  const enAvance=!!avant&&avant.due>t;
  if(enAvance&&apres.due<avant.due)apres.due=avant.due;
  S.sr[id]=apres;save();return enAvance}
 /* Ramener une carte à demain, à la demande : le seul chemin qui raccourcit une échéance. */
 function ramener(ids){const t=tN();ids.forEach(id=>{const r=S.sr[id];if(r&&r.due>t+1)r.due=t+1});save()}
 const gradeBtns=(id,gs)=>`<div class="grades">${gs.map(g=>`<button class="g${g}" data-g="${g}">${NOMS[g]}<small>${ivTxt(id,g)}</small></button>`).join('')}</div>`;
+/* Escalier de rappel par carte : 0 découverte (format d'origine), 1 texte à trous sur la bonne réponse,
+   2 réponse libre, 3 « explique le comme à un apprenti ». Le niveau vit dans S.sr[id].lv (lp compte les
+   réussites depuis le dernier palier). Une carte vue avant l'escalier compte au niveau 1. */
+const niveau=r=>!r?0:(r.lv==null?1:r.lv);
+const reponseTexte=q=>q.t==='qcm'?q.c[q.a]:q.t==='carte'?q.r:q.t==='match'?q.p.map(p=>p[0]+' : '+p[1]+'.').join(' '):'';
+const bonne=q=>q.t==='qcm'?q.c[q.a]:q.t==='carte'?q.r:q.t==='vf'?(q.a?'Vrai':'Faux'):q.t==='order'?'<ol class="fbo">'+q.i.map(y=>'<li>'+y+'</li>').join('')+'</ol>':q.t==='match'?'<ul class="fbo">'+q.p.map(p=>'<li><b>'+p[0]+'</b> : '+p[1]+'</li>').join('')+'</ul>':fmt(q.a)+' '+(q.u||'');
+/* Carte-problème : valeurs tirées à chaque revue (empreinte de la carte, du jour et du compteur de réponses),
+   résultat calculé par la formule f sur les variables v (plage [min, max, pas], ou expression sur les autres).
+   La réponse est le résultat, jamais la formule. Rendue comme une question num. */
+function instancier(q,id){const t=tN(),v={};for(const k in q.v){const p=q.v[k];if(Array.isArray(p)){const u=FSRS.empreinte(id+':'+k+':'+t+':'+(S.day.n||0));v[k]=p[0]+Math.round(u*(p[1]-p[0])/p[2])*p[2]}else v[k]=new Function(...Object.keys(v),'return '+p)(...Object.values(v))}
+ for(const k in q.d||{})v[k]=new Function(...Object.keys(v),'return '+q.d[k])(...Object.values(v));
+ const a=Math.round(new Function(...Object.keys(v),'return '+q.f)(...Object.values(v))*100)/100,sub=s=>String(s).replace(/\{=\}/g,fmt(a)).replace(/\{(\w+)\}/g,(m,k)=>k in v?fmt(v[k]):m);
+ return {t:'num',q:sub(q.q),a,tol:q.tol||1,u:q.u||'',e:sub(q.e),src:q.src,note:q.note}}
+const consigne=(q,lv)=>(lv>=3?'Explique le comme à un apprenti, en deux ou trois phrases. ':'')+(q.t==='match'?'Pour chacun, dis ce qui lui correspond : '+q.p.map(p=>p[0]).join(', ')+'.':q.t==='vf'?q.q+' Vrai ou faux, et pourquoi ?':q.t==='order'?q.q+' De mémoire, sans la liste.':q.q);
 
 /* ===================== SESSION : UNE CARTE PLEIN ÉCRAN ===================== */
 /* Confiance avant la réponse sur les QCM, vrai/faux et numériques, agrégée dans S.conf : [réponses, justes]. */
@@ -1158,14 +1202,14 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
     son bilan par dessus l'écran en cours. */
  stopChrono();let chrono=0;
  const restant=()=>{const s=Math.max(0,Math.ceil((FIN-Date.now())/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
- /* Une carte ratée revient dans la même séance, 3 à 6 cartes plus loin : c'est là que la reprise
-    paie le plus. Une seule fois, sinon une mauvaise passe transformerait la séance en boucle.
-    Son échéance FSRS (demain) reste inchangée. */
+ /* Une carte ratée revient dans la même séance, 5 à 10 cartes plus loin, jusqu'à réussite : c'est là
+    que la reprise paie le plus. Trois passages au plus, sinon une mauvaise passe transformerait la
+    séance en boucle. Son échéance FSRS (demain) reste inchangée. */
  /* cartes ratées alors qu'elles n'étaient pas encore dues : leur échéance a été protégée,
     on le dit au bilan et on laisse Gab décider de les ramener. */
  const protege=[];
  const rejoue={};
- const rejouer=x=>{if(o.examen||rejoue[x.id])return;rejoue[x.id]=1;list.splice(Math.min(list.length,i+3+Math.floor(Math.random()*4)),0,x.id)};
+ const rejouer=x=>{if(o.examen||(rejoue[x.id]||0)>=3)return;rejoue[x.id]=(rejoue[x.id]||0)+1;list.splice(Math.min(list.length,i+5+Math.floor(Math.random()*6)),0,x.id)};
  /* Une carte qui revient dans la séance est annoncée comme telle : sans cela, la file passe de
     60 à 63 cartes sans explication et on croit à un doublon. */
  const estReprise=()=>!!rejoue[list[i]]&&list.indexOf(list[i])<i;
@@ -1173,9 +1217,13 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
  const suivant=()=>{i++;i<list.length?show():bilan()};
  const gagne=n=>{xp+=n;gainXP(n)};
  const show=()=>{const x=ITEM[list[i]],t0=Date.now(),r0=S.sr[x.id];
-  if(x.kind==='k'){const TR=x.tr,un=TR.R.length===1;
-   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>point clé ${x.rang+1} / ${x.n} · ch. ${x.li}</span></div>
-   <div class="recto trous"><div class="rt">${x.b.h}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche une pastille pour n'en révéler qu'une.</div></div><div id="verso"></div>
+  /* niveau de rappel : les calculs gardent leur format, un examen blanc garde le format réel ; une bonne
+     réponse sans trou honnête passe directement en réponse libre */
+  let lv=o.examen||x.kind==='k'||/^(num|calc)$/.test(x.q.t)?0:niveau(r0);if(x.q&&x.q.t==='carte')lv=Math.max(lv,r0?niveau(r0):2);if(x.id.startsWith('c-'))lv=Math.max(lv,2);
+  const TR=x.kind==='k'?x.tr:lv===1?trous(reponseTexte(x.q)):null;if(lv===1&&!TR)lv=2;
+  if(x.kind==='k'||TR){const un=TR.R.length===1,rt=x.kind==='k'?x.b.h:fx(x.q.q),eti=x.kind==='k'?`point clé ${x.rang+1} / ${x.n} · ch. ${x.li}`:`ch. ${x.li} · ${esc(L[x.li].t)}`;
+   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>${eti}</span></div>
+   <div class="recto trous"><div class="rt">${rt}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche une pastille pour n'en révéler qu'une.</div></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn ghost sm" id="indice">${ic('info')}Indice</button><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();
    /* révéler un seul trou : la pastille de rappel sert d'aide graduée avant de retourner */
@@ -1192,11 +1240,20 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
      const aide=TR.K[t]==='nombre'?(u?'… '+esc(u):nb+' chiffre'+(nb>1?'s':'')):esc(r.slice(0,1))+' …';
      e.innerHTML=`<i class="tn">${t+1}</i><span class="ta">${aide}</span>`});$('#indice').disabled=true};
    $('#flip').onclick=()=>{app.querySelectorAll('.trou').forEach((e,k)=>{e.textContent=TR.R[+e.dataset.t];e.classList.add('vu');e.style.animationDelay=k*70+'ms';e.removeAttribute('aria-label')});
-    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>`;
+    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b><div>${fx(x.q.e)}</div></div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
-  const q=x.q;let body='',st={};
+  if(lv>=2){const q=x.q;
+   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)]} · ${lv>=3?'explique':'rappel'}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div><div class="q">${consigne(q,lv)}</div>
+   <textarea class="mine" id="libre" rows="3" placeholder="Ta réponse, au clavier ou à voix haute" aria-label="Ta réponse"></textarea><div id="micro"></div><div id="verso"></div>
+   <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Révéler la réponse</button></div></div></div></div>`;
+   $('#squit').onclick=()=>fin();const stopMic=enregistreur($('#micro'));
+   $('#flip').onclick=()=>{$('#libre').readOnly=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b><div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button></div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
+    $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
+    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{stopMic();const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok,q);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(6)}else{miss.push(x);rejouer(x)}suivant()})};
+   return}
+  const q=x.q.t==='calc'?instancier(x.q,x.id):x.q;let body='',st={};
   if(q.t==='qcm')body=`<div class="opts">${shuffle(q.c.map((c,k)=>k)).map((k,p)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[p]}</span>${q.c[k]}</button>`).join('')}</div>`;
   if(q.t==='vf')body=`<div class="opts"><button class="opt" data-k="1"><span class="k">V</span>Vrai</button><button class="opt" data-k="0"><span class="k">F</span>Faux</button></div>`;
   if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off" aria-label="Ta réponse"><span class="u">${q.u||''}</span><button class="btn" id="val">OK</button></div>`;
@@ -1207,7 +1264,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   let fait=false,cf=null;
   /* confiance avant la réponse : un toucher, facultatif, retouché pour l'enlever */
   app.querySelectorAll('.conf [data-cf]').forEach(b=>b.onclick=()=>{if(fait)return;cf=cf===b.dataset.cf?null:b.dataset.cf;app.querySelectorAll('.conf [data-cf]').forEach(z=>z.setAttribute('aria-pressed',String(z.dataset.cf===cf)))});
-  const answer=(ok,extra)=>{if(fait)return;fait=true;if(cf){S.conf=S.conf||{};const c=S.conf[cf]||(S.conf[cf]=[0,0]);c[0]++;if(ok)c[1]++}const dt=(Date.now()-t0)/1000;repondu(ok,q);if(ok){combo++;questAdd('combo',combo);nok++;gagne(6)}else{combo=0;miss.push(x);rejouer(x)}feel(ok,combo);
+  const answer=(ok,extra)=>{if(fait)return;fait=true;if(cf){S.conf=S.conf||{};const c=S.conf[cf]||(S.conf[cf]=[0,0]);c[0]++;if(ok)c[1]++}const dt=(Date.now()-t0)/1000;repondu(ok,q);if(ok){combo++;questAdd('combo',combo);nok++;gagne(6)}else{combo=0;miss.push(q!==x.q?Object.assign({},x,{q}):x);rejouer(x)}feel(ok,combo);
    app.querySelectorAll('.opt,#val,#nin,#oval,#oclr,.conf button').forEach(b=>b.disabled=true);
    const ex=extra&&extra[0]==='<'?extra:'',tx=extra&&extra[0]!=='<'?' · '+extra:'';
    let act='';
@@ -1218,7 +1275,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g;const av=o.libre?false:noter(x.id,g);if(av&&g===1&&protege.indexOf(x.id)<0)protege.push(x.id);suivant()});
    const fbx=$('#fb');fbx&&fbx.scrollIntoView({block:'nearest',behavior:'smooth'})};
   if(q.t==='qcm'||q.t==='vf')app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const k=+b.dataset.k,ok=q.t==='qcm'?k===q.a:(k===1)===q.a;b.classList.add(ok?'ok':'ko');if(!ok){const r=q.t==='qcm'?q.a:(q.a?1:0);const c=app.querySelector(`.opt[data-k="${r}"]`);c&&c.classList.add('ok')}answer(ok)});
-  if(q.t==='num'){const go_=()=>{const v=parseFloat($('#nin').value.replace(',','.'));if(isNaN(v))return;const ok=!q.tol?v===q.a:Math.abs(v-q.a)/Math.abs(q.a)*100<=q.tol;answer(ok,ok?'':'Attendu : '+fmt(q.a)+' '+(q.u||'')+(aide(x.li)!=='coeur'?'. Le chiffre ne se retient pas, la méthode oui.':'. Sans support à l\'examen : la formule se retient.'))};$('#val').onclick=go_;$('#nin').onkeydown=e=>{if(e.key==='Enter')go_()}}
+  if(q.t==='num'){const go_=()=>{const v=parseFloat($('#nin').value.replace(',','.'));if(isNaN(v))return;const ok=Math.abs(v-q.a)/Math.max(1e-9,Math.abs(q.a))*100<=(q.tol||1);answer(ok,ok?'':'Attendu : '+fmt(q.a)+' '+(q.u||'')+(aide(x.li)!=='coeur'?'. Le chiffre ne se retient pas, la méthode oui.':'. Sans support à l\'examen : la formule se retient.'))};$('#val').onclick=go_;$('#nin').onkeydown=e=>{if(e.key==='Enter')go_()}}
   if(q.t==='order'){const draw=()=>{$('#ord').innerHTML=st.items.map((it,k)=>{const p=st.pick.indexOf(it);return `<button class="opt${p>=0?' sel':''}" data-k="${k}"><span class="n">${p>=0?p+1:'·'}</span>${it}</button>`}).join('');$('#oval').disabled=st.pick.length<q.i.length;$('#oclr').disabled=!st.pick.length;
    /* une étape déjà numérotée se retire d'un toucher, les suivantes remontent d'un rang : pour inverser 2 et 3,
       on touche le 2 (le 3 devient 2), puis on le retouche (il devient 3). La réponse part sur Valider. */
@@ -1238,9 +1295,14 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
  const fin=()=>{if(i>0)bilan();else{stopChrono();document.body.classList.remove('focus');go(retour)}};
  const bilan=()=>{stopChrono();chrono=0;document.body.classList.remove('focus');fermerPanneau();const n=Math.min(i+1,list.length),vus=i>=list.length?list.length:i;const tot=Math.max(1,FIN?N0:vus),pct=Math.round(nok/tot*100),n6=Math.round((1+5*nok/tot)*10)/10;
   S.coins+=nok;if(vus>=Math.min(5,list.length))questAdd('rev');
+  /* paires confondues : deux cartes ratées du même chapitre comptées ensemble ; à deux reprises, carte de contraste */
+  const rq=[...new Set(miss)].filter(x=>x.kind==='q'&&!x.id.startsWith('c-'));S.cf=S.cf||{};
+  for(let a=0;a<rq.length;a++)for(let b=a+1;b<rq.length;b++)if(rq[a].li===rq[b].li){const k=[rq[a].id,rq[b].id].sort().join('|');S.cf[k]=(S.cf[k]||0)+1}
+  const ks=Object.keys(S.cf);if(ks.length>300)ks.sort((x,y)=>S.cf[x]-S.cf[y]).slice(0,ks.length-300).forEach(k=>delete S.cf[k]);
+  const nc=o.examen?0:contrastes();
   if(o.examen)S.log=(S.log||[]).concat([{d:today(),t:titre,e:o.epr==null?-1:o.epr,n:nok,tot:FIN?N0:vus,f:FIN?1:0}]).slice(-100);
   save();pushRappels();tabs();
-  app.innerHTML=hud()+`<div class="card res"><div class="big">${pct>=80?ic('brain'):pct>=50?ic('trend'):ic('refresh')}</div><h2>${esc(titre)}</h2><p>${nok} / ${FIN?N0:vus} · ${pct} %</p>${FIN&&N0>vus?`<p class="eyebrow">${N0-vus} question${N0-vus>1?'s':''} non répondue${N0-vus>1?'s':''}, comptée${N0-vus>1?'s':''} fausse${N0-vus>1?'s':''} : le temps t'a manqué.</p>`:''}${o.examen?`<p id="note6">Note <b class="gnote ${clsNote(n6)}">${fmt1(n6)}</b> / 6${FIN?' · '+Math.max(1,Math.round((Date.now()-T0)/6e4))+' min sur '+o.min:''}</p>`:''}<div class="gain"><span class="pill">+<span class="count" data-to="${xp}">0</span> XP</span><span class="pill">${ic('coin')}+<span class="count" data-to="${nok}">0</span></span></div>${objectifLine()}
+  app.innerHTML=hud()+`<div class="card res"><div class="big">${pct>=80?ic('brain'):pct>=50?ic('trend'):ic('refresh')}</div><h2>${esc(titre)}</h2><p>${nok} / ${FIN?N0:vus} · ${pct} %</p>${FIN&&N0>vus?`<p class="eyebrow">${N0-vus} question${N0-vus>1?'s':''} non répondue${N0-vus>1?'s':''}, comptée${N0-vus>1?'s':''} fausse${N0-vus>1?'s':''} : le temps t'a manqué.</p>`:''}${o.examen?`<p id="note6">Note <b class="gnote ${clsNote(n6)}">${fmt1(n6)}</b> / 6${FIN?' · '+Math.max(1,Math.round((Date.now()-T0)/6e4))+' min sur '+o.min:''}</p>`:''}<div class="gain"><span class="pill">+<span class="count" data-to="${xp}">0</span> XP</span><span class="pill">${ic('coin')}+<span class="count" data-to="${nok}">0</span></span></div>${objectifLine()}${nc?`<p class="eyebrow">${nc} carte${nc>1?'s':''} de contraste créée${nc>1?'s':''} : deux notions confondues seront posées côte à côte.</p>`:''}
   ${miss.length?`<div class="miss"><div class="eyebrow">${protege.length>=[...new Set(miss)].length?'Tes erreurs':'À revoir demain'}</div>${[...new Set(miss)].map(x=>`<div><b>${x.kind==='k'?x.b.h:fx(x.q.q)}</b>${x.kind==='k'?fmtKey(x.txt):fx(x.q.e)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button></div>`).join('')}</div>`:(vus?'<p>Sans faute. Les intervalles s\'allongent.</p>':'')}
   ${protege.length?`<div class="fb"><b>${protege.length} carte${protege.length>1?'s':''} ratée${protege.length>1?'s':''} mais pas encore due${protege.length>1?'s':''}</b><div>Leur date n'a pas bougé : une séance en avance ne défait pas ton planning. À toi de voir.</div><button class="btn ghost sm" id="ramener" style="margin-top:10px">${ic('refresh')}Les ramener à demain</button></div>`:''}
   <div class="nav" style="justify-content:center"><button class="btn" id="ok">Retour</button></div></div>`;
@@ -1277,10 +1339,10 @@ const weakFirst=pool=>{const f=x=>{const r=S.sr[x.id];return !r||r.f>0||r.n<2};r
    Épreuve 1 : les chapitres de l'épreuve 1 (domaines A, C, D, E, F du profil de qualification). */
 const FMT=[{n:30,m:45},{n:15,m:20,s:'fascicule autorisé'},{n:20,m:30,s:'classeur autorisé'},{n:20,m:25}];
 /* Tirage mélangé : une question par chapitre à tour de rôle, chapitres dans le désordre, puis tout mélangé. */
-function tirage(lis,n){const g=shuffle(lis).map(li=>shuffle(L[li].q.map(q=>ITEM[q.id]).filter(Boolean)));const o=[];
+function tirage(lis,n){const g=shuffle(lis).map(li=>shuffle(L[li].q.filter(q=>q.t!=='carte').map(q=>ITEM[q.id]).filter(Boolean)));const o=[];
  while(o.length<n&&g.some(a=>a.length))g.forEach(a=>{if(a.length&&o.length<n)o.push(a.pop())});return shuffle(o)}
 function examenBlanc(i){let pool,titre;const o={examen:true,epr:i==null?-1:i};
- if(i==null||i<0){pool=ALLQ.filter(x=>S.sr[x.id]);if(pool.length<15)pool=ALLQ;pool=shuffle(pool).slice(0,15);titre='Examen blanc'}
+ if(i==null||i<0){pool=ALLQ.filter(x=>S.sr[x.id]&&x.q.t!=='carte');if(pool.length<15)pool=ALLQ.filter(x=>x.q.t!=='carte');pool=shuffle(pool).slice(0,15);titre='Examen blanc'}
  else{const f=FMT[i]||{n:20,m:30};pool=tirage(EPR[i].l,f.n);titre='Examen blanc · '+EPR[i].n;o.min=f.m;o.support=f.s||'sans support'}
  reviser(pool.map(x=>x.id),Object.assign(o,{titre}))}
 
@@ -2076,6 +2138,16 @@ function monter3D(T,jeton){
 /* ===================== STATISTIQUES ===================== */
 const TOUS=()=>Object.values(ITEM);
 function compteEtats(cs){const o={new:0,cours:0,anc:0,frag:0};cs.forEach(x=>o[etat(S.sr[x.id])]++);return o}
+/* Par chapitre : réussite des révisions notées (S.rc, rempli par noter) et cartes sangsues, ratées SANG fois
+   ou plus. Marteler une sangsue ne sert à rien : on relit la note, ou on la suspend (S.susp, ignorée par
+   dues) en attendant de la réécrire ou de la découper. */
+const SANG=4;
+const sangsue=x=>{const r=S.sr[x.id];return !!r&&r.f>=SANG};
+function parChapitre(){const rows=[];for(let li=1;li<=NCH;li++){const c=S.rc[li],n=cartesChap(li).filter(sangsue).length;if(!c&&!n)continue;
+  rows.push(`<tr><td>${li} · ${esc(L[li].t)}</td><td class="r">${c?Math.round(c[0]/c[1]*100)+' %':''}</td><td class="r">${c?c[1]:0}</td><td class="r">${n||''}</td></tr>`)}
+ const sg=TOUS().filter(sangsue).sort((a,b)=>S.sr[b.id].f-S.sr[a.id].f);
+ return `<div class="card"><div class="eyebrow">Par chapitre · réussite des révisions notées</div>${rows.length?`<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Chapitre</th><th class="r">Réussite</th><th class="r">Notées</th><th class="r">Sangsues</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="eyebrow">Pas encore de révision notée.</p>'}
+ ${sg.length?`<div class="eyebrow" style="margin-top:12px">Sangsues · ${SANG} échecs ou plus · à réécrire ou découper, pas à marteler</div>${sg.map(x=>`<div class="fb"><b>${x.kind==='k'?x.b.h:fx(x.q.q)}</b><div>Ratée ${S.sr[x.id].f} fois · ch. ${x.li}${S.susp[x.id]?' · suspendue, hors file':''}</div><div class="ordact"><button class="btn ghost sm" data-n="${x.b.id}">${ic('book')}Relire la note</button><button class="btn ghost sm" data-susp="${x.id}">${S.susp[x.id]?'Remettre en file':'Suspendre'}</button></div></div>`).join('')}`:''}</div>`}
 /* Note estimée sur 6, par épreuve. Formule simple et volontairement prudente :
      p = moyenne, sur toutes les cartes de l'épreuve, de la probabilité de rappel FSRS aujourd'hui
          (une carte jamais vue compte 0) ;
@@ -2092,6 +2164,8 @@ function histogramme(){const g=S.goal||20;const days=[...Array(21)].map((_,i)=>{
  const tot=days.reduce((a,x)=>a+x.n,0),actifs=days.filter(x=>x.n).length;
  return `<div class="card"><div class="eyebrow">Trois dernières semaines · ${pl(tot,'réponse')} · ${pl(actifs,'jour actif','jours actifs')}</div>${barres(days.map(x=>x.n),days.map((x,i)=>i%7===6?x.d.slice(8)+'.'+x.d.slice(5,7):''),{h:90,aria:'Réponses par jour sur 21 jours',col:(i,v)=>days[i].gel?'#7CC4FF':v>=g?'var(--ok)':'var(--accent)'})}<div class="pax"><span>il y a 3 semaines</span><span>objectif ${g} par jour</span><span>aujourd'hui</span></div></div>`}
 function statistiques(){const t=tN(),all=TOUS(),E=compteEtats(all),N=all.length;
+ /* cartes tenues : vues, et que FSRS donne à 90 % ou plus de chance de rappel aujourd'hui */
+ let ten=0,vus=0;all.forEach(x=>{const r=S.sr[x.id];if(r){vus++;if(FSRS.retrievability(r,t)>=.9)ten++}});
  /* rétention observée : cartes déjà vues, notées sur les 30 derniers jours */
  let rok=0,rtot=0;for(const k in S.ret){if(t-dayN(k)<30){rok+=S.ret[k][0];rtot+=S.ret[k][1]}}
  /* charge : cartes dues par jour sur 14 jours (le retard compte aujourd'hui), puis par semaine jusqu'à l'examen */
@@ -2107,8 +2181,9 @@ function statistiques(){const t=tN(),all=TOUS(),E=compteEtats(all),N=all.length;
  <p class="eyebrow" style="margin-top:6px">Cible FSRS : 90 % de cartes retrouvées au jour prévu. Nettement en dessous, les cartes reviennent plus souvent, c'est normal.</p>
  <div class="card"><div class="eyebrow">Cartes par état · ${N} au total</div><div class="pbar"><i style="width:${E.anc/N*100}%"></i><i class="s" style="width:${E.cours/N*100}%"></i><i class="f" style="width:${E.frag/N*100}%"></i></div><div class="pleg"><span><b class="ok"></b>${E.anc} ancrées</span><span><b class="ac"></b>${E.cours} en cours</span><span><b class="ko"></b>${E.frag} fragiles</span><span><b></b>${E.new} nouvelles</span></div>
  <div style="overflow-x:auto;margin-top:12px"><table class="tbl"><thead><tr><th>Épreuve</th><th class="r">Nouv.</th><th class="r">En cours</th><th class="r">Ancrées</th><th class="r">Fragiles</th></tr></thead><tbody>${EPR.map((e,i)=>{const c=compteEtats(eprCartes(i));return `<tr><td style="white-space:nowrap">${e.n} <small style="color:var(--ink2)">${e.p}</small></td><td class="r">${c.new}</td><td class="r">${c.cours}</td><td class="r" style="color:var(--ok)">${c.anc}</td><td class="r" style="color:var(--bad)">${c.frag}</td></tr>`}).join('')}</tbody></table></div>
- <p class="eyebrow" style="margin-top:8px">Une carte peut compter dans deux épreuves quand le chapitre est commun (épreuves 1 et 3).</p></div>
- ${repartition()}${confiance()}
+ <p class="eyebrow" style="margin-top:8px">Une carte peut compter dans deux épreuves quand le chapitre est commun (épreuves 1 et 3).</p>
+ <p class="eyebrow" style="margin-top:8px">Tenues aujourd'hui : <b>${vus?Math.round(ten/vus*100)+' %':'pas encore'}</b> des cartes vues ont au moins 90 % de chance d'être retrouvées (FSRS).</p></div>
+ ${repartition()}${parChapitre()}${confiance()}
  <div class="card"><div class="eyebrow">Charge prévue · 14 prochains jours</div>${barres(j14,jl,{h:90,aria:'Cartes dues par jour sur 14 jours'})}
  <div class="eyebrow" style="margin-top:14px">Puis par semaine jusqu'à l'examen</div>${sem.length?barres(sem,sl,{h:80,aria:'Cartes dues par semaine jusqu\'à l\'examen',col:()=>'var(--accent2)'}):'<p class="eyebrow">L\'examen est dans moins de deux semaines.</p>'}
  <p class="eyebrow" style="margin-top:8px">Seules les cartes déjà vues sont comptées. Aucune révision n'est prévue après le 8 mars 2027 : les deux dernières semaines servent aux examens blancs.</p></div>
@@ -2116,7 +2191,8 @@ function statistiques(){const t=tN(),all=TOUS(),E=compteEtats(all),N=all.length;
  <div class="verdict ${reussi?'ok':'ko'}">${ic(reussi?'check':'alert')}<div><b>${reussi?'Au rythme actuel, les conditions de réussite sont remplies.':'Pas encore dans les conditions de réussite.'}</b> Règle : moyenne d'au moins 4,0, au plus une épreuve sous 4,0, aucune sous 3,0.${!reussi?' Ici : moyenne '+fmt1(moy)+(sous4>1?', '+sous4+' épreuves sous 4,0':'')+(sous3?', '+pl(sous3,'épreuve')+' sous 3,0':'')+'.':''}</div></div>
  <p class="eyebrow" style="margin-top:8px">Calcul : 1 + 5 × la probabilité moyenne de retrouver chaque carte de l'épreuve aujourd'hui (FSRS), une carte jamais vue comptant zéro. 60 % de rappel donne 4,0. Indicateur de préparation, pas une prédiction : l'oral et la pratique ne sont pas mesurés.</p></div>
  <div class="card"><div class="eyebrow">Examens blancs</div>${log.length?`<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Date</th><th>Examen</th><th class="r">Score</th><th class="r">Sur 6</th></tr></thead><tbody>${log.map(x=>{const n6=Math.round((1+5*x.n/Math.max(1,x.tot))*10)/10;return `<tr><td>${x.d.slice(8)}.${x.d.slice(5,7)}</td><td>${esc(x.t)}</td><td class="r">${x.n} / ${x.tot}</td><td class="r"><span class="gnote ${clsNote(n6)}" style="font-size:16px">${fmt1(n6)}</span></td></tr>`}).join('')}</tbody></table></div>`:'<p class="eyebrow">Aucun examen blanc pour l\'instant. Lance le depuis Aujourd\'hui ou Réviser.</p>'}<button class="lrow" id="go-recu"><div><b>Suis-je reçu ?</b><small>La règle du brevet appliquée à tes derniers examens blancs</small></div>${ic('chevR')}</button></div>
- ${histogramme()}`;$('#go-recu').onclick=recu;flushCele()}
+ ${histogramme()}`;$('#go-recu').onclick=recu;
+ app.querySelectorAll('[data-susp]').forEach(b=>b.onclick=()=>{const id=b.dataset.susp;if(S.susp[id])delete S.susp[id];else S.susp[id]=1;save();statistiques()});flushCele()}
 /* Cartes vues par épreuve face au poids de l'examen (un chapitre commun compte pour chaque épreuve). */
 function repartition(){const v=EPR.map((e,i)=>eprStat(i).nseen),sv=v.reduce((a,b)=>a+b,0);
  return `<div class="card" id="repart"><div class="eyebrow">Cartes vues par épreuve, face au poids de l'examen</div>${EPR.map((e,i)=>{const p=sv?Math.round(v[i]/sv*100):0,c=Math.round(POIDS[i]*100);return `<div class="rep"><div class="rep-l"><span><b>${e.n}</b> · ${pl(v[i],'carte vue','cartes vues')}</span><span>${p} %<small>cible ${c} %</small></span></div><div class="rep-b" role="img" aria-label="${e.n} : ${p} % des cartes vues, cible ${c} %"><i style="width:${p}%"></i><em style="left:${c}%"></em></div></div>`}).join('')}<p class="eyebrow" style="margin-top:8px">Le trait marque la cible. Les nouvelles cartes du jour sont tirées pour s'en rapprocher.</p></div>`}
@@ -2205,7 +2281,7 @@ function brancherSauv(){app.querySelectorAll('[data-sauv]').forEach(b=>b.onclick
 
 
 /* ===================== DÉMARRAGE ===================== */
-charger();appliquerLecture();newDay();demanderCloud();
+charger();contrastes();appliquerLecture();newDay();demanderCloud();
 /* L'état iCloud poussé par l'app avant que le moteur existe est rejoué ici. */
 if(window.__cloudEnAttente){const t=window.__cloudEnAttente;window.__cloudEnAttente=null;window.recevoirCloud(t)}
 bienvenue();go('auj');pushRappels();
@@ -2213,7 +2289,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v18"></script>
-<script src="acces.js?v=bq5-v18"></script>
+<script src="entrainement.js?v=bq5-v19"></script>
+<script src="acces.js?v=bq5-v19"></script>
 </body>
 </html>
