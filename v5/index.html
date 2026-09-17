@@ -1192,6 +1192,13 @@ function instancier(q,id){const t=tN(),v={};for(const k in q.v){const p=q.v[k];i
  for(const k in q.d||{})v[k]=new Function(...Object.keys(v),'return '+q.d[k])(...Object.values(v));
  const a=Math.round(new Function(...Object.keys(v),'return '+q.f)(...Object.values(v))*100)/100,sub=s=>String(s).replace(/\{=\}/g,fmt(a)).replace(/\{(\w+)\}/g,(m,k)=>k in v?fmt(v[k]):m);
  return {t:'num',q:sub(q.q),a,tol:q.tol||1,u:q.u||'',e:sub(q.e),src:q.src,note:q.note}}
+/* Contexte de la carte : le cours et le titre de sa note, pour savoir de quoi on parle (retour de Gab, 17 sept.). */
+const contexte=x=>`<div class="eyebrow" style="margin-bottom:6px">${esc(coursOf(x.li).id||'')} · ${x.b.h}</div>`;
+/* Association au niveau trous : un trou par terme, face à sa définition. */
+const trousMatch=q=>({mode:'match',R:q.p.map(p=>plain(p[0])),K:q.p.map(()=>'terme'),html:q.p.map((p,k)=>MARQ+k+MARQ+' : '+p[1]).join('<br>')});
+/* Un QCM dont la question renvoie à ses propositions (« lequel de ces… ») les garde sous les yeux en réponse libre. */
+const DEPEND=/\b(lequel|laquelle|lesquels|lesquelles|parmi|suivante?s?|ci-dessous|de ces|quelle affirmation|quelle proposition|quel énoncé|intrus)\b/i;
+const propositions=q=>q.t==='qcm'&&DEPEND.test(plain(q.q))?'<ul class="fbo">'+shuffle(q.c.slice()).map(c=>'<li>'+c+'</li>').join('')+'</ul>':'';
 const consigne=(q,lv)=>(lv>=3?'Explique le comme à un apprenti, en deux ou trois phrases. ':'')+(q.t==='match'?'Pour chacun, dis ce qui lui correspond : '+q.p.map(p=>p[0]).join(', ')+'.':q.t==='vf'?q.q+' Vrai ou faux, et pourquoi ?':q.t==='order'?q.q+' De mémoire, sans la liste.':q.q);
 
 /* ===================== SESSION : UNE CARTE PLEIN ÉCRAN ===================== */
@@ -1229,10 +1236,10 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   /* niveau de rappel : les calculs gardent leur format, un examen blanc garde le format réel ; une bonne
      réponse sans trou honnête passe directement en réponse libre */
   let lv=o.examen||x.kind==='k'||/^(num|calc)$/.test(x.q.t)?0:niveau(r0);if(x.q&&x.q.t==='carte')lv=Math.max(lv,r0?niveau(r0):2);if(x.id.startsWith('c-'))lv=Math.max(lv,2);
-  const TR=x.kind==='k'?x.tr:lv===1?trous(reponseTexte(x.q)):null;if(lv===1&&!TR)lv=2;
+  const TR=x.kind==='k'?x.tr:lv===1?(x.q.t==='match'?trousMatch(x.q):trous(reponseTexte(x.q))):null;if(lv===1&&!TR)lv=2;
   if(x.kind==='k'||TR){const un=TR.R.length===1,rt=x.kind==='k'?x.b.h:fx(x.q.q),eti=x.kind==='k'?`point clé ${x.rang+1} / ${x.n} · ch. ${x.li}`:`ch. ${x.li} · ${esc(L[x.li].t)}`;
    app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>${eti}</span></div>
-   <div class="recto trous"><div class="rt">${rt}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche une pastille pour n'en révéler qu'une.</div></div><div id="verso"></div>
+   <div class="recto trous">${x.kind==='q'?contexte(x):''}<div class="rt">${rt}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche une pastille pour n'en révéler qu'une.</div></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn ghost sm" id="indice">${ic('info')}Indice</button><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();
    /* révéler un seul trou : la pastille de rappel sert d'aide graduée avant de retourner */
@@ -1254,7 +1261,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
   if(lv>=2){const q=x.q;
-   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)]} · ${lv>=3?'explique':'rappel'}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div><div class="q">${consigne(q,lv)}</div>
+   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)]} · ${lv>=3?'explique':'rappel'}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div>${contexte(x)}<div class="q">${consigne(q,lv)}</div>${propositions(q)}
    <textarea class="mine" id="libre" rows="3" placeholder="Ta réponse, au clavier ou à voix haute" aria-label="Ta réponse"></textarea><div id="micro"></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Révéler la réponse</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();const stopMic=enregistreur($('#micro'));
@@ -1268,7 +1275,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off" aria-label="Ta réponse"><span class="u">${q.u||''}</span><button class="btn" id="val">OK</button></div>`;
   if(q.t==='order'){st.items=shuffle(q.i);st.pick=[];body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche les étapes dans le bon ordre. Touche une étape numérotée pour la retirer.</p><div class="opts order" id="ord"></div><div class="ordact"><button class="btn ghost sm" id="oclr" disabled>${ic('x')}Tout effacer</button><button class="btn sm" id="oval" disabled>${ic('check')}Valider</button></div>`}
   if(q.t==='match'){st.l=shuffle(q.p.map(p=>p[0]));st.r=shuffle(q.p.map(p=>p[1]));st.sel=null;st.pairs={};body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche un terme, puis sa définition. Touche une paire faite pour la défaire.</p><div class="match" id="mt"></div><div class="ordact"><button class="btn ghost sm" id="oclr" disabled>${ic('x')}Tout effacer</button><button class="btn sm" id="oval" disabled>${ic('check')}Valider</button></div>`}
-  app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.examen?(o.support?' · '+o.support:''):' · '+(estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)])}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div><div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}<div id="fb"></div></div></div>`;
+  app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.examen?(o.support?' · '+o.support:''):' · '+(estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)])}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div>${o.examen?'':contexte(x)}<div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}<div id="fb"></div></div></div>`;
   $('#squit').onclick=()=>fin();
   let fait=false,cf=null;
   /* confiance avant la réponse : un toucher, facultatif, retouché pour l'enlever */
@@ -2299,7 +2306,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v21"></script>
-<script src="acces.js?v=bq5-v21"></script>
+<script src="entrainement.js?v=bq5-v23"></script>
+<script src="acces.js?v=bq5-v23"></script>
 </body>
 </html>
