@@ -1262,12 +1262,12 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
    return}
   if(lv>=2){const q=x.q;
    app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)]} · ${lv>=3?'explique':'rappel'}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div>${contexte(x)}<div class="q">${consigne(q,lv)}</div>${propositions(q)}
-   <textarea class="mine" id="libre" rows="3" placeholder="Ta réponse, au clavier ou à voix haute" aria-label="Ta réponse"></textarea><div id="micro"></div><div id="verso"></div>
-   <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Révéler la réponse</button></div></div></div></div>`;
-   $('#squit').onclick=()=>fin();const stopMic=enregistreur($('#micro'));
-   $('#flip').onclick=()=>{$('#libre').readOnly=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b><div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${btnCom(x)}</div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
+   <div class="hint" id="libre">Réponds dans ta tête ou à voix haute, puis retourne la carte.</div><div id="verso"></div>
+   <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
+   $('#squit').onclick=()=>fin();
+   $('#flip').onclick=()=>{$('#libre').hidden=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b><div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${btnCom(x)}</div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
-    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{stopMic();const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok,q);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(6)}else{miss.push(x);rejouer(x)}suivant()})};
+    app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok,q);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(6)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
   const q=x.q.t==='calc'?instancier(x.q,x.id):x.q;let body='',st={};
   if(q.t==='qcm')body=`<div class="opts">${shuffle(q.c.map((c,k)=>k)).map((k,p)=>`<button class="opt" data-k="${k}"><span class="k">${'ABCD'[p]}</span>${q.c[k]}</button>`).join('')}</div>`;
@@ -2306,7 +2306,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v23"></script>
-<script src="acces.js?v=bq5-v23"></script>
+<script src="entrainement.js?v=bq5-v24"></script>
+<script src="acces.js?v=bq5-v24"></script>
 </body>
 </html>
