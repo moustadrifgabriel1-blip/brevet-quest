@@ -965,7 +965,9 @@ function dues(){const t=tN(),g={};for(const id in S.sr){const r=S.sr[id];if(ITEM
  /* par échéance, puis mélangées à l'intérieur d'un même jour : pas de bloc d'un seul chapitre */
  const o=Object.keys(g).map(Number).sort((a,b)=>a-b).flatMap(k=>shuffle(g[k]));
  /* entrelacement : jamais deux cartes du même chapitre à la suite quand une autre carte peut prendre la place */
- for(let i=1;i<o.length;i++){const li=ITEM[o[i-1]].li;if(ITEM[o[i]].li!==li)continue;const j=o.findIndex((id,k)=>k>i&&ITEM[id].li!==li);if(j>0){const t=o[i];o[i]=o[j];o[j]=t}}
+ for(let i=1;i<o.length;i++){const li=ITEM[o[i-1]].li;if(ITEM[o[i]].li!==li)continue;const j=o.findIndex((id,k)=>k>i&&ITEM[id].li!==li);if(j>0){const t=o[i];o[i]=o[j];o[j]=t;continue}
+  /* bout de file : plus rien derrière pour séparer, on glisse la carte plus tôt, entre deux cartes d'autres chapitres */
+  for(let k=1;k<i;k++)if(ITEM[o[k-1]].li!==li&&ITEM[o[k]].li!==li){o.splice(k,0,o.splice(i,1)[0]);break}}
  return o}
 const chapVu=li=>!!S.done[li]||cartesChap(li).some(x=>S.sr[x.id]);
 const chapFini=li=>cartesChap(li).every(x=>S.sr[x.id]);
@@ -2231,7 +2233,17 @@ const SOURCES=[['https://www.fedlex.admin.ch/eli/cc/1994/1233_1233_1233/fr','OLE
 const CONFIDENTIALITE='https://moustadrifgabriel1-blip.github.io/brevet-quest/v5/confidentialite.html';
 function profil(){const r=rank(),all=TOUS(),E=compteEtats(all),vus=all.length-E.new,l=S.lect||DEF.lect;
  const seg=(k,vals,lab)=>`<div class="seg" role="group">${vals.map((v,i)=>`<button class="${l[k]===v?'on':''}" data-lk="${k}" data-lv="${v}" aria-pressed="${l[k]===v}">${lab?lab[i]:v}</button>`).join('')}</div>`;
- app.innerHTML=hud()+`<div class="hero"><h1>${r.name}</h1><p>${S.xp} XP · série de ${pl(streakNow(),'jour')} · record ${S.streak.best||streakNow()}${r.nx?' · '+(r.nx[0]-S.xp)+' XP avant '+r.nx[1]:''}</p><div class="ebar" style="margin-top:10px"><i style="width:${r.pct}%"></i></div></div>
+ /* Mini tuto pour les camarades : ouvert tant qu'on débute (moins de 30 cartes vues), replié ensuite. */
+ const tuto=`<details class="card fold" id="tuto"${vus<30?' open':''}><summary>Comment ça marche, en une minute</summary><ol style="margin:8px 0 0;padding-left:20px;font-size:15px;line-height:1.5;display:flex;flex-direction:column;gap:8px">
+ <li><b>Aujourd'hui.</b> Un seul bouton : il lance les cartes du jour, tous chapitres mélangés. Dix à vingt minutes suffisent.</li>
+ <li><b>Une carte.</b> La première fois, c'est un QCM ou une association pour découvrir. Ensuite, plus de choix à cocher : un texte à trous, puis la question seule. Tu réponds dans ta tête ou à voix haute, tu retournes la carte.</li>
+ <li><b>Tu te notes.</b> À revoir, Difficile, Bien, Facile. Sois honnête : l'app ramène chaque carte juste avant que tu l'oublies. Une carte ratée revient dans la séance, puis le lendemain.</li>
+ <li><b>Cerveau.</b> Tous les résumés du cours, reliés entre eux. Chaque carte apprise allume sa note. Cherche un mot, suis les liens, écris tes propres notes.</li>
+ <li><b>Réviser.</b> Examens blancs au format réel et chronométrés, scénarios d'oral, études de cas, labos.</li>
+ <li><b>Statistiques.</b> Ta note estimée par épreuve, la réussite par chapitre, et les cartes qui résistent (les sangsues) à relire plutôt qu'à marteler.</li>
+ <li><b>Une erreur, une idée ?</b> Bouton Commenter sur chaque carte retournée, ou la carte Commentaires plus bas : ça part par mail à Gab.</li></ol>
+ <p style="color:var(--ink2);font-size:14px;margin:10px 0 0">Le plus important : un peu chaque jour vaut mieux qu'une grosse séance le dimanche.</p></details>`;
+ app.innerHTML=hud()+tuto+`<div class="hero"><h1>${r.name}</h1><p>${S.xp} XP · série de ${pl(streakNow(),'jour')} · record ${S.streak.best||streakNow()}${r.nx?' · '+(r.nx[0]-S.xp)+' XP avant '+r.nx[1]:''}</p><div class="ebar" style="margin-top:10px"><i style="width:${r.pct}%"></i></div></div>
  <div class="grid2"><div class="stat"><small>Cartes vues</small><span>${vus} / ${all.length}</span></div><div class="stat"><small>Ancrées</small><span style="color:var(--ok)">${E.anc}</span></div><div class="stat"><small>Pièces</small><span>${ic('coin')}${S.coins}</span></div><div class="stat"><small>Gels de série</small><span>${ic('snow')}${S.freeze||0} / 2</span></div></div>
  <div class="card"><div class="eyebrow">Lecture</div>
  <div class="row"><span>Taille du texte</span>${seg('t',[17,19,21],['17','19','21'])}</div>
@@ -2306,7 +2318,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v24"></script>
-<script src="acces.js?v=bq5-v24"></script>
+<script src="entrainement.js?v=bq5-v26"></script>
+<script src="acces.js?v=bq5-v26"></script>
 </body>
 </html>
