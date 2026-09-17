@@ -1197,7 +1197,7 @@ function instancier(q,id){const t=tN(),v={};for(const k in q.v){const p=q.v[k];i
 /* Contexte de la carte : le cours et le titre de sa note, pour savoir de quoi on parle (retour de Gab, 17 sept.). */
 const contexte=x=>`<div class="eyebrow" style="margin-bottom:6px">${esc(coursOf(x.li).id||'')} · ${x.b.h}</div>`;
 /* Association au niveau trous : un trou par terme, face à sa définition. */
-const trousMatch=q=>({mode:'match',R:q.p.map(p=>plain(p[0])),K:q.p.map(()=>'terme'),html:q.p.map((p,k)=>MARQ+k+MARQ+' : '+p[1]).join('<br>')});
+const trousMatch=q=>({mode:'match',R:q.p.map(p=>plain(p[0])),K:q.p.map(()=>'terme'),html:q.p.map((p,k)=>'<span style="display:block;margin:0 0 14px">'+MARQ+k+MARQ+' : '+p[1]+'</span>').join('')});
 /* Un QCM dont la question renvoie à ses propositions (« lequel de ces… ») les garde sous les yeux en réponse libre. */
 const DEPEND=/\b(lequel|laquelle|lesquels|lesquelles|parmi|suivante?s?|ci-dessous|de ces|quelle affirmation|quelle proposition|quel énoncé|intrus)\b/i;
 const propositions=q=>q.t==='qcm'&&DEPEND.test(plain(q.q))?'<ul class="fbo">'+shuffle(q.c.slice()).map(c=>'<li>'+c+'</li>').join('')+'</ul>':'';
@@ -1241,7 +1241,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   const TR=x.kind==='k'?x.tr:lv===1?(x.q.t==='match'?trousMatch(x.q):trous(reponseTexte(x.q))):null;if(lv===1&&!TR)lv=2;
   if(x.kind==='k'||TR){const un=TR.R.length===1,rt=x.kind==='k'?x.b.h:fx(x.q.q),eti=x.kind==='k'?`point clé ${x.rang+1} / ${x.n} · ch. ${x.li}`:`ch. ${x.li} · ${esc(L[x.li].t)}`;
    app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>${eti}</span></div>
-   <div class="recto trous">${x.kind==='q'?contexte(x):''}<div class="rt">${rt}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche une pastille pour n'en révéler qu'une.</div></div><div id="verso"></div>
+   <div class="recto trous">${x.kind==='q'?contexte(x):''}<div class="rt">${rt}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche un trou pour n'en révéler qu'un.</div></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn ghost sm" id="indice">${ic('info')}Indice</button><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();
    /* révéler un seul trou : la pastille de rappel sert d'aide graduée avant de retourner */
@@ -1249,6 +1249,8 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
     e.textContent=TR.R[k];e.classList.add('vu');e.removeAttribute('aria-label');
     const c=app.querySelector('.tc[data-c="'+k+'"]');if(c){c.classList.add('vu');c.disabled=true}};
    app.querySelectorAll('.tc').forEach(b=>b.onclick=()=>ouvrir(+b.dataset.c));
+   /* toucher le trou lui-même le révèle aussi : c'est le geste naturel */
+   app.querySelectorAll('.trou').forEach(e=>{e.style.cursor='pointer';e.onclick=()=>ouvrir(+e.dataset.t)});
    /* indice : la première lettre d'un terme, l'unité d'une valeur. Donner le premier chiffre
       d'un nombre reviendrait à donner la réponse. */
    $('#indice').onclick=()=>{app.querySelectorAll('.trou:not(.vu)').forEach(e=>{const t=+e.dataset.t,r=TR.R[t];
@@ -2318,7 +2320,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v26"></script>
-<script src="acces.js?v=bq5-v26"></script>
+<script src="entrainement.js?v=bq5-v27"></script>
+<script src="acces.js?v=bq5-v27"></script>
 </body>
 </html>
