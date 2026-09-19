@@ -155,7 +155,8 @@ a[data-n]:hover{background:var(--tint)}
 .tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--ink3);min-width:60px;padding:4px 4px;border-radius:12px;transition:color .2s,transform .18s}.tabbar button.on{color:var(--accent)}.tabbar button b{display:block;width:26px;height:26px;line-height:0}.tabbar button b .ic{width:26px;height:26px}.tabbar button:active{transform:scale(.92)}
 .tabbar .dot{position:absolute;top:2px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--bad);border:2px solid var(--card);box-sizing:content-box}
 body.focus .tabbar{display:none}
-@media(min-width:900px){
+/* Barre latérale : écran large piloté à la souris. Un iPad en paysage garde la barre du bas. */
+@media(min-width:900px) and (pointer:fine){
  .tabbar{top:0;right:auto;bottom:0;width:230px;flex-direction:column;justify-content:flex-start;gap:4px;border-top:0;border-right:1px solid var(--line);padding:calc(18px + var(--sat)) 12px 18px;box-shadow:none}
  .tabbar .brand{display:block;font-weight:800;font-size:19px;letter-spacing:-.02em;padding:4px 12px 16px}
  .tabbar button{flex-direction:row;gap:12px;width:100%;font-size:15.5px;min-height:44px;padding:8px 12px;color:var(--ink2)}.tabbar button b,.tabbar button b .ic{width:22px;height:22px}.tabbar button.on{background:var(--tint);color:var(--accent2)}
@@ -244,7 +245,9 @@ select.field{font-size:16px;font-weight:600;padding:10px 12px}
 body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
 #c3d{--fh:44%;position:fixed;inset:0;z-index:4;overflow:hidden;color:rgba(255,255,255,.92);background:radial-gradient(120% 85% at 50% 40%,#17213f 0%,#0b1024 46%,#04060d 100%);animation:fadein .35s;--tb:0px;-webkit-user-select:none;user-select:none}
 #c3d [hidden]{display:none!important}
-@media(min-width:900px){#c3d{left:230px}}
+@media(min-width:900px) and (pointer:fine){#c3d{left:230px}}
+/* Cerveau en pleine page : plus de navigation autour, le bouton du cerveau la ramène. */
+body.c3plein .tabbar{display:none!important}body.c3plein #c3d{left:0}
 .c3stage{position:absolute;inset:0;touch-action:none;cursor:grab}.c3stage:active{cursor:grabbing}
 .c3stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .c3lab{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -295,6 +298,8 @@ body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
    valeur, pour que les deux ne puissent plus diverger. */
 .c3fiche{position:absolute;left:0;right:0;bottom:var(--tb);height:var(--fh,44%);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg);color:var(--ink);border-radius:22px 22px 0 0;box-shadow:0 -14px 44px rgba(0,0,0,.5);padding:0 16px 22px;animation:sheet .32s cubic-bezier(.2,.8,.2,1);touch-action:pan-y;-webkit-user-select:text;user-select:text;z-index:4;transition:height .3s cubic-bezier(.2,.8,.2,1)}
 .c3fiche.max{height:calc(100% - var(--tb) - 64px - var(--sat))}
+.c3mt{display:none;flex:1;min-width:0;font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.c3fiche.min{height:78px;overflow:hidden}.c3fiche.min .c3mt{display:block}.c3fiche.min .back,.c3fiche.min .c3fh>span{display:none}.c3fh .c3x+.c3x{margin-left:-2px}
 .c3grab{display:flex;width:100%;height:22px;align-items:center;justify-content:center;position:sticky;top:0;background:var(--bg);z-index:1}.c3grab i{width:40px;height:5px;border-radius:3px;background:var(--line2)}
 .c3fh{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px}.c3fh .back span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:15em}
 .c3x{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:var(--card2);color:var(--ink2);flex:none}.c3x .ic{width:20px;height:20px}
@@ -309,10 +314,12 @@ body.c3on{overflow:hidden}body.c3on #app{visibility:hidden}
  #c3d.fo .c3tools{bottom:calc(var(--fh,44%) + var(--tb) + 12px)}#c3d.fo .c3tools #c3zp,#c3d.fo .c3tools #c3zm{display:none}
  #c3d.fo.fmax .c3tools{opacity:0;pointer-events:none}}
 @media(min-width:900px){
- .c3fiche{left:auto;top:0;bottom:0;height:auto;width:min(440px,44%);border-radius:0;padding:calc(10px + var(--sat)) 22px 24px;animation:panin .3s cubic-bezier(.2,.8,.2,1);box-shadow:-14px 0 44px rgba(0,0,0,.45)}
+ .c3fiche{left:auto;top:0;bottom:var(--tb);height:auto;width:min(440px,44%);border-radius:0;padding:calc(10px + var(--sat)) 22px 24px;animation:panin .3s cubic-bezier(.2,.8,.2,1);box-shadow:-14px 0 44px rgba(0,0,0,.45)}
  .c3grab{display:none}
+ .c3fiche.min{top:auto;height:68px;padding-top:10px;border-radius:18px 0 0 0}
  #c3d.fo .c3top{right:var(--fw,0px)}#c3d.fo .c3tools{transform:translateX(calc(-1 * var(--fw,0px)))}#c3d.fo .c3leg{right:calc(var(--fw,0px) + 12px)}#c3d.fo .c3hint{opacity:0}
 }
+#c3d.fo.fmin .c3tools{bottom:calc(78px + var(--tb) + 12px)}
 @media(prefers-reduced-motion:reduce){#c3d,.c3fiche{animation:none}.c3c,.c3n{transition:none}}
 /* bannière d'erreur : hors de #app */
 #errbar{position:fixed;left:12px;right:12px;top:calc(8px + var(--sat));z-index:75;background:#7a2222;color:#fff;border-radius:14px;padding:10px 12px 10px 14px;font-size:14px;line-height:1.4;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--sh2)}#errbar button{color:#fff;font-weight:700;min-height:32px;padding:0 6px;flex:none}
@@ -363,6 +370,8 @@ const I={
  check:'<path d="M20 6L9 17l-5-5"/>',
  x:'<path d="M18 6L6 18M6 6l12 12"/>',
  chevL:'<path d="M15 18l-6-6 6-6"/>',
+ chevD:'<path d="M6 9l6 6 6-6"/>',chevU:'<path d="M6 15l6-6 6 6"/>',
+ plein:'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>',
  chevR:'<path d="M9 18l6-6-6-6"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/>',
@@ -1631,7 +1640,7 @@ function cvGraphe2D(){const sc=CV.scope||'tout',set=portee(sc),ids=new Set(set.m
 let G3=null,T3=null;
 function webglOk(){try{const c=document.createElement('canvas'),g=c.getContext('webgl2')||c.getContext('webgl');if(!g)return false;const x=g.getExtension('WEBGL_lose_context');if(x)x.loseContext();return true}catch(e){return false}}
 function cvGraphe(){if(!webglOk()){cvGraphe2D();return}cerveau3D()}
-function stop3D(){if(!G3)return;const g=G3;G3=null;try{if(g.off)g.off()}catch(e){console.warn('Cerveau 3D, arrêt',e)}const l=$('#c3d');if(l)l.remove();document.body.classList.remove('c3on')}
+function stop3D(){if(!G3)return;const g=G3;G3=null;try{if(g.off)g.off()}catch(e){console.warn('Cerveau 3D, arrêt',e)}const l=$('#c3d');if(l)l.remove();document.body.classList.remove('c3on','c3plein')}
 function repli3D(msg){stop3D();toast(ic('info')+esc(msg));cvGraphe2D()}
 function cerveau3D(){stop3D();const jeton={};G3={jeton};
  app.innerHTML=hud()+cvBack('Cerveau')+'<div class="hero"><h1>Cerveau 3D</h1><p>Mise en place des régions…</p></div>';bindBack();
@@ -1738,7 +1747,7 @@ function monter3D(T,jeton){
  <div class="c3row"><div class="c3lum c3g" id="c3lum" aria-label="${NA} notes allumées sur ${n}"><i></i><span><b>${NA}</b> / ${n} allumées</span></div><div class="c3sel c3g"><select id="c3f" aria-label="Notes à afficher"><option value="tout">Toutes les notes</option>${EPR.map((e,i)=>`<option value="e${i}">${esc(e.n)} · ${esc(e.t)}</option>`).join('')}${COURS.map(c=>`<option value="${c.id}">${esc(c.id)} · ${esc(c.t)}</option>`).join('')}</select>${ic('chevR')}</div></div>
  <div class="c3sug" id="c3sug" role="listbox" aria-label="Notes trouvées" hidden></div>
  <div class="c3leg" id="c3leg" hidden>${legende}</div>
- <div class="c3tools"><button class="c3g" id="c3zp" aria-label="Zoomer">${ic('plus')}</button><button class="c3g" id="c3zm" aria-label="Dézoomer">${ic('minus')}</button><button class="c3g" id="c3fit" aria-label="Recentrer sur tout le cerveau">${ic('target')}</button></div>
+ <div class="c3tools"><button class="c3g" id="c3pl" aria-label="Cerveau en pleine page" aria-pressed="false">${ic('plein')}</button><button class="c3g" id="c3zp" aria-label="Zoomer">${ic('plus')}</button><button class="c3g" id="c3zm" aria-label="Dézoomer">${ic('minus')}</button><button class="c3g" id="c3fit" aria-label="Recentrer sur tout le cerveau">${ic('target')}</button></div>
  <div class="c3hint c3g" id="c3hint">${NA?'Chaque carte apprise allume sa note.':'Tout est éteint. Chaque carte apprise allumera sa note.'} Touche une note pour voir ses liens. Un doigt tourne, deux doigts zooment.</div>
  <aside class="c3fiche" id="c3fi" role="dialog" aria-label="Fiche de la note" hidden></aside>`;
  const offs=[],on=(el,ev,f,o)=>{el.addEventListener(ev,f,o);offs.push(()=>el.removeEventListener(ev,f,o))};
@@ -1817,7 +1826,7 @@ function monter3D(T,jeton){
  /* zone utile : sous la barre du haut, au dessus de la barre d'onglets et de la fiche (ou à gauche du panneau) */
  const LAT=matchMedia('(min-width: 900px)');
  const zone=()=>{const top=lay.classList.contains('fo')&&!LAT.matches?lay.querySelector('.c3top').offsetHeight+6:lay.querySelector('.c3row').offsetTop+50;let bot=H-TB,right=W;
-  if(!fi.hidden){if(LAT.matches){right=fi.offsetLeft;lay.style.setProperty('--fw',fi.offsetWidth+'px')}else bot=fi.offsetTop}
+  if(!fi.hidden){if(LAT.matches){if(fi.classList.contains('min')){lay.style.setProperty('--fw','0px')}else{right=fi.offsetLeft;lay.style.setProperty('--fw',fi.offsetWidth+'px')}}else bot=fi.offsetTop}
   U={x:0,y:top,w:Math.max(80,right),h:Math.max(80,bot-top)};OFFT.x=W/2-(U.x+U.w/2);OFFT.y=H/2-(U.y+U.h/2);UIB=null;demande()};
  const mesurer=()=>{const r=lay.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);const tb=$('#tabs'),tr=tb&&getComputedStyle(tb).display!=='none'?tb.getBoundingClientRect():null;
   TB=tr&&tr.width>=r.width*.6&&tr.top>r.top+r.height*.5?Math.max(0,r.bottom-tr.top):0;lay.style.setProperty('--tb',TB+'px');
@@ -1905,20 +1914,22 @@ function monter3D(T,jeton){
   if(SEL!=null&&!o.retour){FIL.push(SEL);if(FIL.length>60)FIL.shift()}
   SEL=i;FK=null;majLegende();CV.sel=NL[i].id;LIT=new Set(ADJ[i]);NUM.clear();voisines(i).forEach((j,k)=>NUM.set(j,k+1));
   cibles();fibres(i);fiche(i);volNote(i,{force:!!o.force});eteindreAide()}
- function fermerFiche(garder){SEL=null;CV.sel=null;FIL=[];LIT=new Set();NUM.clear();fibres(null);fi.hidden=true;fi.classList.remove('max');lay.classList.remove('fo','fmax');if(!garder)cibles();zone()}
+ let FMIN=false;
+ function fermerFiche(garder){SEL=null;CV.sel=null;FIL=[];LIT=new Set();NUM.clear();fibres(null);fi.hidden=true;fi.classList.remove('max');lay.classList.remove('fo','fmax','fmin');if(!garder)cibles();zone()}
  const court=(s,m)=>s.length>m?s.slice(0,m-1).replace(/\s+\S*$/,'')+'…':s;
  function fiche(i){const b=NL[i],c=COURS[ci[i]],col=couleurCours(c.id),ps=b.p||[];let acc=0,k=0;while(k<ps.length&&(k===0||acc<520)){acc+=plain(ps[k]).length;k++}
   const vois=voisines(i).map(j=>NL[j].id),prec=FIL.length?NL[FIL[FIL.length-1]]:null;
   fi.innerHTML=`<button class="c3grab" id="c3gr" aria-label="Agrandir ou réduire la fiche"><i></i></button>
-  <div class="c3fh">${prec?`<button class="back" id="c3fil" aria-label="Revenir à la note précédente : ${esc(plain(prec.h))}">${ic('chevL')}<span>${esc(court(plain(prec.h),30))}</span></button>`:'<span></span>'}<button class="c3x" id="c3x" aria-label="Fermer la fiche">${ic('x')}</button></div>
+  <div class="c3fh">${prec?`<button class="back" id="c3fil" aria-label="Revenir à la note précédente : ${esc(plain(prec.h))}">${ic('chevL')}<span>${esc(court(plain(prec.h),30))}</span></button>`:'<span></span>'}<button class="c3mt" id="c3mt">${esc(plain(b.h))}</button><button class="c3x" id="c3min" aria-label="${FMIN?'Rouvrir la fiche':'Réduire la fiche'}">${ic(FMIN?'chevU':'chevD')}</button><button class="c3x" id="c3x" aria-label="Fermer la fiche">${ic('x')}</button></div>
   <div class="notepage"><div class="meta"><span><i class="cdot" style="background:${col}"></i> ${esc(c.id)} · ${esc(c.t)}</span><span>ch. ${b.li} · ${esc(L[b.li].t)}</span></div>
   <div class="c3lumn" aria-label="Lumière de la note : ${Math.round(LUM[i]*100)} %"><i><span style="width:${Math.round(LUM[i]*100)}%;background:${COLH[ci[i]]}"></span></i><small>${LUM[i]<.02?'Éteinte':LUM[i]<LUM_ON?'Braise':LUM[i]<.8?'Allumée':'Brillante'} · ${Math.round(LUM[i]*100)} %</small></div>
   <div class="lecture"><h1>${b.h}</h1>${b.k?`<div class="key"><div class="eyebrow">Points clés</div>${fmtKey(b.k)}</div>`:''}${ps.slice(0,k).map(p=>para(lk(p))).join('')}${k<ps.length?'<p class="c3suite">La suite dans la note complète.</p>':''}</div></div>
   <div class="c3acts"><button class="btn" id="c3open">${ic('book')}Ouvrir la note complète</button><button class="btn ghost" id="c3learn">${ic('bolt')}${LUM[i]<.02?'Allumer cette note':LUM[i]<.8?'Faire briller cette note':'Réviser cette note'}</button></div>
   ${vois.length?`<h3 class="c3h3">${ic('link')}Notes liées · ${vois.length}</h3><p class="c3aide">Chaque numéro se retrouve sur le cerveau, posé sur la note.</p><div class="chips">${vois.map((id,k)=>{const x=NOTES[id],cc=coursOf(x.li);return `<button class="chip" data-v="${id}"><b class="c3num">${k+1}</b><i class="cdot" style="background:${couleurCours(cc.id)}"></i>${x.h}<small>${esc(cc.id)}</small></button>`}).join('')}</div>`:''}`;
-  const first=fi.hidden;fi.hidden=false;fi.scrollTop=0;lay.classList.add('fo');if(!first)fi.style.animation='none';else fi.style.animation='';
+  const first=fi.hidden;fi.hidden=false;fi.scrollTop=0;lay.classList.add('fo');fi.classList.toggle('min',FMIN);lay.classList.toggle('fmin',FMIN);if(FMIN){fi.classList.remove('max');lay.classList.remove('fmax')}
+  const reduire=v=>{FMIN=v;fiche(i);setTimeout(zone,320)};fi.querySelector('#c3min').onclick=()=>reduire(!FMIN);fi.querySelector('#c3mt').onclick=()=>reduire(false);if(!first)fi.style.animation='none';else fi.style.animation='';
   fi.querySelector('#c3x').onclick=()=>fermerFiche();const f=fi.querySelector('#c3fil');if(f)f.onclick=()=>{const j=FIL.pop();if(j!=null)choisir(j,{retour:true})};
-  fi.querySelector('#c3gr').onclick=()=>{fi.classList.toggle('max');lay.classList.toggle('fmax',fi.classList.contains('max'));setTimeout(zone,320)};
+  fi.querySelector('#c3gr').onclick=()=>{if(FMIN){reduire(false);return}fi.classList.toggle('max');lay.classList.toggle('fmax',fi.classList.contains('max'));setTimeout(zone,320)};
   fi.querySelector('#c3open').onclick=()=>ouvrirNote(b.id);
   fi.querySelector('#c3learn').onclick=()=>{const cs=cartesNote(b.id);if(!cs.length){toast(ic('info')+'Aucune carte pour cette note');return}const nv=cs.filter(x=>!S.sr[x.id]),du=cs.filter(x=>S.sr[x.id]&&S.sr[x.id].due<=tN()),l=nv.concat(du);stop3D();
    l.length?reviser(l.map(x=>x.id),{titre:'Note · '+plain(b.h)})
@@ -1951,6 +1962,7 @@ function monter3D(T,jeton){
  /* Le bouton zoom ne fait que zoomer. Il ouvrait la fiche de la note la plus proche une fois
     assez près, ce qui surgissait sans qu'on ait rien demandé. Le pincement et la molette gardent
     ce raccourci : là, on vise vraiment quelque chose. */
+ lay.querySelector('#c3pl').onclick=e=>{const v=document.body.classList.toggle('c3plein');e.currentTarget.setAttribute('aria-pressed',v);e.currentTarget.setAttribute('aria-label',v?'Quitter la pleine page':'Cerveau en pleine page');mesurer();demande()};
  lay.querySelector('#c3zp').onclick=()=>voler({r:Math.max(.3,O.r/1.45)},380);
  lay.querySelector('#c3zm').onclick=()=>voler({r:Math.min(10,O.r*1.45)},380);
  /* « Recentrer sur tout le cerveau » lève aussi le filtre : depuis que choisir un cours cache
@@ -2320,7 +2332,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v28"></script>
-<script src="acces.js?v=bq5-v28"></script>
+<script src="entrainement.js?v=bq5-v29"></script>
+<script src="acces.js?v=bq5-v29"></script>
 </body>
 </html>
