@@ -1651,7 +1651,7 @@ const css3=c=>'rgb('+c.map(v=>Math.round(v*255)).join(',')+')';
 
 /* Mise en page par forces, calculée une fois (environ 300 itérations), puis gardée dans localStorage avec
    l'empreinte du contenu : une nouvelle note ou un nouveau lien la fait recalculer, rien d'autre. */
-function mise3D(ci,E){const n=NL.length,K=COURS.length,sig=hash('c3d-v6|'+NL.map(b=>b.id+':'+(b.liens||[]).join(',')+'>'+(b.voisins||[]).join(',')).join(';'));
+function mise3D(ci,E){const n=NL.length,K=COURS.length,sig=hash('c3d-v7|'+NL.map(b=>b.id+':'+(b.liens||[]).join(',')+'>'+(b.voisins||[]).join(',')).join(';'));
  try{const o=JSON.parse(localStorage.getItem('c3d.pos')||'null');if(o&&o.s===sig&&o.p&&o.p.length===n*3)return Float32Array.from(o.p)}catch(e){}
  const {ax,ay,az,cx}=C3;let gr=20260911;const rnd=()=>(gr=(gr*1664525+1013904223)>>>0)/4294967296;
  /* ramène le point o de v sur la coque de rayon réduit rho de son hémisphère (f : part de la correction) */
@@ -1661,12 +1661,12 @@ function mise3D(ci,E){const n=NL.length,K=COURS.length,sig=hash('c3d-v6|'+NL.map
  /* 1. centres des régions : départ en couronne sur la face externe, puis écartement selon la taille du cours
     et rapprochement selon le nombre de liens entre cours, toujours sur la coque. Les grands cours montent vers
     la face supérieure et externe : c'est elle qu'on voit d'abord, la face inférieure reste aux petits cours. */
- const C=new Float32Array(K*3),ra=nk.map(v=>.075*Math.sqrt(v)+.06);
+ const C=new Float32Array(K*3),ra=nk.map(v=>.12*Math.sqrt(v)+.06);
  [-1,1].forEach(s=>{const ks=COURS.map((c,k)=>k).filter(k=>hs[k]===s);ks.sort((a,b)=>nk[b]-nk[a]).forEach((k,m)=>{const t=(m+.5)/ks.length*Math.PI*2;C[k*3]=s*(cx+ax*(.35+.4*Math.abs(Math.sin(t))));C[k*3+1]=ay*(.75-.9*m/ks.length);C[k*3+2]=Math.cos(t)*az*.8;coque(C,k*3,s,1,1)})});
  for(let it=0;it<500;it++){const al=1-it/500;
   for(let a=0;a<K;a++)for(let b=a+1;b<K;b++){const dx=C[a*3]-C[b*3],dy=C[a*3+1]-C[b*3+1],dz=C[a*3+2]-C[b*3+2],d=Math.sqrt(dx*dx+dy*dy+dz*dz)||1e-3;let f=0;
    if(hs[a]===hs[b]){const D=(ra[a]+ra[b])*1.05;if(d<D)f+=(D-d)*.22}
-   f-=Math.min(W[a][b],40)*.0006*al*d;const ux=dx/d*f,uy=dy/d*f,uz=dz/d*f;C[a*3]+=ux;C[a*3+1]+=uy;C[a*3+2]+=uz;C[b*3]-=ux;C[b*3+1]-=uy;C[b*3+2]-=uz}
+   f-=Math.min(W[a][b],40)*.001*al*d;const ux=dx/d*f,uy=dy/d*f,uz=dz/d*f;C[a*3]+=ux;C[a*3+1]+=uy;C[a*3+2]+=uz;C[b*3]-=ux;C[b*3+1]-=uy;C[b*3+2]-=uz}
   for(let k=0;k<K;k++){const s=hs[k];C[k*3+1]+=.0012*Math.sqrt(nk[k])*al;C[k*3]+=s*.0006*Math.sqrt(nk[k])*al;
    if((C[k*3]-s*cx)*s<-.05*ax)C[k*3]=s*cx-.05*ax*s;const fl=-ay*(nk[k]>12?.05:.3);if(C[k*3+1]<fl)C[k*3+1]=fl;coque(C,k*3,s,1,1)}}
  /* 2. notes : répulsion entre notes du même hémisphère, ressorts sur les liens (courts dans un cours, lâches
@@ -1676,10 +1676,10 @@ function mise3D(ci,E){const n=NL.length,K=COURS.length,sig=hash('c3d-v6|'+NL.map
  const IT=320;
  for(let it=0;it<IT;it++){const al=Math.max(.04,1-it/IT);
   for(let i=0;i<n;i++){const o=i*3;for(let j=i+1;j<n;j++){if(hn[i]!==hn[j])continue;const q=j*3,dx=P[o]-P[q],dy=P[o+1]-P[q+1],dz=P[o+2]-P[q+2],d2=dx*dx+dy*dy+dz*dz;if(d2>.16)continue;
-   const f=(ci[i]===ci[j]?.00011:.00022)*al/(d2+.0009);V[o]+=dx*f;V[o+1]+=dy*f;V[o+2]+=dz*f;V[q]-=dx*f;V[q+1]-=dy*f;V[q+2]-=dz*f}}
+   const f=(ci[i]===ci[j]?.0004:.0005)*al/(d2+.0009);V[o]+=dx*f;V[o+1]+=dy*f;V[o+2]+=dz*f;V[q]-=dx*f;V[q+1]-=dy*f;V[q+2]-=dz*f}}
   for(const [i,j] of E){const o=i*3,q=j*3,dx=P[q]-P[o],dy=P[q+1]-P[o+1],dz=P[q+2]-P[o+2],d=Math.sqrt(dx*dx+dy*dy+dz*dz)||1e-3,same=ci[i]===ci[j];
-   const f=same?(d-.09)*.03*al:(d>.5?(d-.5)*.0025*al:0);if(!f)continue;const ux=dx/d*f,uy=dy/d*f,uz=dz/d*f;V[o]+=ux;V[o+1]+=uy;V[o+2]+=uz;V[q]-=ux;V[q+1]-=uy;V[q+2]-=uz}
-  for(let i=0;i<n;i++){const o=i*3,k=ci[i]*3;V[o]+=(C[k]-P[o])*.018*al;V[o+1]+=(C[k+1]-P[o+1])*.018*al;V[o+2]+=(C[k+2]-P[o+2])*.018*al;
+   const f=same?(d-.17)*.03*al:(d>.35?(d-.35)*.006*al:0);if(!f)continue;const ux=dx/d*f,uy=dy/d*f,uz=dz/d*f;V[o]+=ux;V[o+1]+=uy;V[o+2]+=uz;V[q]-=ux;V[q+1]-=uy;V[q+2]-=uz}
+  for(let i=0;i<n;i++){const o=i*3,k=ci[i]*3;V[o]+=(C[k]-P[o])*.009*al;V[o+1]+=(C[k+1]-P[o+1])*.009*al;V[o+2]+=(C[k+2]-P[o+2])*.009*al;
    V[o]*=.72;V[o+1]*=.72;V[o+2]*=.72;const m=Math.hypot(V[o],V[o+1],V[o+2]);if(m>.03){V[o]*=.03/m;V[o+1]*=.03/m;V[o+2]*=.03/m}
    P[o]+=V[o];P[o+1]+=V[o+1];P[o+2]+=V[o+2];const s=hn[i];if(P[o]*s<.04)P[o]=.04*s;coque(P,o,s,.965,.35)}}
  for(let i=0;i<n;i++)coque(P,i*3,hn[i],.965,.8);
@@ -2320,7 +2320,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v27"></script>
-<script src="acces.js?v=bq5-v27"></script>
+<script src="entrainement.js?v=bq5-v28"></script>
+<script src="acces.js?v=bq5-v28"></script>
 </body>
 </html>
