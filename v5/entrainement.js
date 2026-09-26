@@ -1,7 +1,8 @@
 /* ===================================================================
    ENTRAÎNEMENT v5 : données en clair, chargées avant le moteur.
    ORAL2 : scénarios d'oral en plus de SCEN (data.js), avec grille de 4 critères notés 0 à 2.
-   CLASSEUR : exercices « quelle page, quelle formule, en moins de 60 s ».
+   CLASSEUR : exercices « trouve-le dans ton classeur », chronométrés (30 s, 1 min 30, pas trouvé).
+   Les clés de progression suivent la position (clx0, clx1…) : ajouter en fin de liste seulement.
    GRILLES : grilles génériques (anciens scénarios de l'épreuve 2, études de cas).
    Chaque scénario porte une clé k stable : la progression S.fr en dépend, ne la change jamais.
    Sources : classe-backend/cours-texte (AA01, AA02, AE01, AE06, AE12, AE13) et classeur/gen_examen20.py.
@@ -101,5 +102,33 @@ CLASSEUR:[
  {ep:3,q:'Tirage d\'un câble unipolaire en cuivre : quelle formule pour l\'effort admissible, et quelle contrainte ?',r:'F adm = n · A · σ adm, σ adm = 60 N/mm² (Cu unipolaire). Support AE12 §12.1.'},
  {ep:3,q:'Rayon de courbure minimal d\'un câble BT unipolaire isolé plastique ?',r:'R min = 12 × diamètre du câble (10 × en multiconducteur). Support AE12 §12.7, tableau des rayons.'},
  {ep:3,q:'Chute de tension en pour cent : quelle formule, et quelle tolérance viser en neuf ?',r:'Δu % = ΔU · 100 / U ; viser ± 6 % (EN 50160 : 230 V ± 10 %). Support AE01 §5.4.'},
- {ep:3,q:'Courant de court-circuit unipolaire en bout de ligne : quelle formule ?',r:'Icc = U ph / (Z tr + 2 · Z L), calculé à 20 °C. Support AE01 §5.5 à §5.7.'}
+ {ep:3,q:'Courant de court-circuit unipolaire en bout de ligne : quelle formule ?',r:'Icc = U ph / (Z tr + 2 · Z L), calculé à 20 °C. Support AE01 §5.5 à §5.7.'},
+ /* 26 sept. 2026 : lois et références. On apprend à les trouver dans le classeur, pas leur numéro.
+    loi:1 ; g = où elles sont dans le classeur de Gab, affiché seulement si le réglage « Mon classeur est celui de Gab » est actif. */
+ {ep:4,loi:1,q:"Un monteur refuse de porter ses EPI. Trouve le texte qui l'y oblige.",r:"OPA art. 11 : le travailleur utilise les EPI fournis et ne nuit pas à leur efficacité.",g:"Épreuve 4, n° 83, p. 488 · index « Travailleur, OPA art. 11 »"},
+ {ep:4,loi:1,q:"Qui paie les EPI ? Trouve le texte.",r:"OPA art. 90 : les frais des mesures de sécurité, EPI compris, sont à la charge de l'employeur.",g:"Épreuve 4, n° 83, p. 488 · index « Frais des EPI »"},
+ {ep:4,loi:1,q:"Dans quel cas l'employeur doit-il fournir des EPI ? Trouve le texte.",r:"OPA art. 5 : quand le risque ne s'élimine pas par des mesures techniques ou organisationnelles.",g:"Épreuve 4, n° 83, p. 488 · index « Employeur, OPA art. 5 »"},
+ {ep:4,loi:1,q:"Du personnel temporaire travaille chez toi : qui surveille le port des EPI ? Trouve l'article.",r:"OPA art. 10 : l'entreprise locataire de services surveille le port des EPI.",g:"Épreuve 4, n° 83, p. 488 · index « Personnel temporaire »"},
+ {ep:4,loi:1,q:"Trouve le texte qui oblige l'employeur à prendre toutes les mesures de sécurité nécessaires.",r:"LAA art. 82 : mesures nécessaires selon l'expérience, applicables selon l'état de la technique, adaptées aux conditions.",g:"Épreuve 4, n° 12, p. 311 · index « LAA art. 82, employeur »"},
+ {ep:4,loi:1,q:"Trouve l'article du Code des obligations qui oblige l'employeur à protéger la santé du travailleur.",r:"CO art. 328 : l'employeur protège la vie et la santé du travailleur.",g:"Épreuve 4, n° 99, p. 536 · index « CO art. 328 »"},
+ {ep:4,loi:1,q:"Un candélabre mal entretenu tombe sur une voiture. Trouve le texte qui rend le propriétaire responsable.",r:"CO art. 58 : le propriétaire d'un ouvrage répond du défaut d'entretien.",g:"Épreuve 4, n° 93, p. 514 · index « CO art. 58 »"},
+ {ep:4,loi:1,q:"Une personne est blessée par une installation à courant fort. Trouve le texte qui rend l'exploitant responsable.",r:"LIE art. 27 : l'exploitant répond des dommages corporels, sauf force majeure, faute d'un tiers ou faute lourde de la victime.",g:"Épreuve 4, n° 12, p. 311 · index « LIE art. 27 »"},
+ {ep:4,loi:1,q:"Trouve le texte qui oblige l'exploitant à entretenir son installation en permanence.",r:"OICF art. 17 : entretien permanent, installation en parfait état, schémas et inscriptions à jour.",g:"Épreuve 4, n° 85, p. 493 (aussi p. 456 et 514) · index « OICF art. 17 »"},
+ {ep:4,loi:1,q:"Combien de temps garder le rapport de contrôle d'une station ? Trouve l'article.",r:"OICF art. 19 : les rapports se gardent pendant deux périodes de contrôle.",g:"Épreuve 4, n° 93, p. 514 · index « OICF art. 19 »"},
+ {ep:4,loi:1,q:"Quelle est la périodicité maximale de contrôle d'une station ou d'une ligne aérienne ? Trouve le tableau.",r:"Tableau des périodicités par ouvrage : OICF pour les stations, OLEI art. 135.3 pour les lignes aériennes.",g:"Épreuve 4, n° 68, p. 461 · index « Périodicité maximale OICF »"},
+ {ep:4,loi:1,q:"Tu dois travailler sur une ligne en câbles. Trouve l'article qui dit quoi faire avant.",r:"OLEI art. 140 : identifier sans équivoque, mettre hors tension et à la terre.",g:"Épreuve 4, n° 75, p. 472 · index « OLEI art. 140 »"},
+ {ep:4,loi:1,q:"Où met-on à la terre la gaine d'une ligne en câbles ? Trouve l'article.",r:"OLEI art. 72 al. 1 : aux deux extrémités, sinon protégée et signalée.",g:"Épreuve 4, n° 75, p. 473 · index « Gaine, OLEI art. 72 al. 1 »"},
+ {ep:4,loi:1,q:"Documenter les contrôles des dispositifs de sécurité : trouve l'article de l'OPA.",r:"OPA art. 32b : contrôles réguliers, travaux consignés.",g:"Épreuve 4, n° 85, p. 493 · index « OPA art. 32b »"},
+ {ep:4,loi:1,q:"Tu fais une manœuvre en BT : trouve le tableau qui fixe tes EPI selon le courant de court-circuit.",r:"ESTI 407 : tableau des classes G, 1, 2 et 3 selon Ik ou le calibre du fusible.",g:"Épreuve 4, n° 18, p. 325 · index « Tableau des classes ESTI 407 »"},
+ {ep:4,loi:1,q:"Contrôle d'un éclairage public : trouve la directive et ses valeurs limites.",r:"ESTI 244 : isolement, boucle, PE du luminaire, tension de défaut, DDR 30 mA en 0,3 s.",g:"Épreuve 4, n° 94, p. 516 · index « ESTI 244 »"},
+ {ep:4,loi:1,q:"Un apprenti de 16 ans rejoint l'équipe. Trouve l'ordonnance qui protège les jeunes travailleurs.",r:"OLT 5 : protection des jeunes travailleurs (LTr, OLT 1 à 5 pour la santé).",g:"Épreuve 4, n° 99, p. 536 · index « LTr, OLT 1 à 5 »"},
+ {ep:4,loi:1,q:"Fouille de 1,8 m sur ton chantier. Trouve la règle de blindage.",r:"OTConst : fouille de plus de 1,5 m étayée ou talutée, blindage qui dépasse d'au moins 15 cm.",g:"Épreuve 4, n° 100, p. 541 · index « Fouilles selon l'OTConst »"},
+ {ep:4,loi:1,q:"Tu entreposes du matériel pour le piquet. Trouve la règle.",r:"OICF art. 34 al. 3 : entrepôts séparés et sécurisés, hors de la zone d'exploitation.",g:"Épreuve 4, n° 21, p. 329 · index « Dépanner dans l'ordre »"},
+ {ep:4,loi:1,q:"Déchets de chantier spéciaux : trouve le document à remplir.",r:"OMoD : document de suivi pour les mouvements de déchets spéciaux.",g:"Épreuve 4, n° 82, p. 486 · index « Document de suivi OMoD »"},
+ {ep:4,loi:1,q:"Maintenance des équipements de travail : trouve la directive CFST.",r:"CFST 6512 : équipements de travail.",g:"Épreuve 4, n° 12, p. 310 · index « CFST 6512 »"},
+ {ep:4,loi:1,q:"Faire appel à un spécialiste de la sécurité au travail : trouve la directive.",r:"CFST 6508 : appel aux médecins du travail et autres spécialistes de la sécurité (MSST).",g:"Épreuve 4, n° 99, p. 536 · index « CFST 6508 »"},
+ {ep:3,loi:1,q:"Travaux sur une ligne aérienne à poteaux en bois : trouve la directive à suivre.",r:"CFST 6506 : travaux sur les poteaux en bois, contrôle et sécurités contre le renversement.",g:"Épreuve 3, n° 12, p. 176 (aussi n° 2, p. 129) · index « Procédure CFST 6506 »"},
+ {ep:3,loi:1,q:"Tension de contact admissible pendant 2 s : trouve la courbe.",r:"OICF, annexe 4 : 50 V alternatif et 120 V continu durablement, courbe jusqu'à 5 s.",g:"Épreuve 3, n° 45, p. 275 (aussi épreuve 4, n° 27, p. 347) · index « Courbe de l'annexe 4 »"},
+ {ep:1,loi:1,q:"Tu montes un consortium avec une autre entreprise. Trouve sa forme juridique.",r:"CO art. 530 : société simple, responsabilité solidaire des associés.",g:"Épreuve 1, n° 32, p. 66"},
+ {ep:1,loi:1,q:"Un client te confie un ouvrage. Trouve la base légale du contrat et la norme de réception.",r:"CO art. 363, contrat d'entreprise ; norme SIA 118, art. 157 et suivants, pour la réception.",g:"Épreuve 1, n° 33, p. 68 et n° 38, p. 80 · index « SIA 118 »"}
 ]};
