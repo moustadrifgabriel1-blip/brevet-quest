@@ -332,6 +332,7 @@ body.c3plein .tabbar{display:none!important}body.c3plein #c3d{left:0}
 .tjauge{display:block;width:46px;height:4px;border-radius:2px;background:var(--bord);overflow:hidden;margin-top:3px}
 .tjauge i{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width .9s linear}
 .tjauge i.court{background:var(--gold)}.tjauge i.fin{background:var(--bad)}.chrono.fin,.mono.fin{color:var(--bad)}
+.lecture .ap{margin-top:6px;padding:8px 10px;border-radius:10px;background:var(--card2);font-size:14.5px;line-height:1.45;color:var(--ink2)}.lecture .ap b{color:var(--ink)}
 .grille{display:grid;gap:12px;margin-top:8px}.grille .cr{display:grid;gap:6px}.grille .cr>span{font-size:15px;line-height:1.4}.grille .pts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.grille .pts button{min-height:44px;border-radius:11px;font-weight:700;font-size:16px;background:var(--card2);box-shadow:inset 0 0 0 1px var(--line)}.grille .pts button[aria-pressed="true"]{background:var(--tint);color:var(--accent2);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .rep{margin:12px 0}.rep-l{display:flex;justify-content:space-between;gap:8px;font-size:14.5px;font-variant-numeric:tabular-nums}.rep-l small{color:var(--ink3);margin-left:4px}.rep-b{position:relative;height:10px;background:var(--line);border-radius:5px;margin-top:6px}.rep-b i{display:block;height:100%;border-radius:5px;background:var(--accent)}.rep-b em{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
 .tbl tr.risque td{background:var(--badbg)}
@@ -1466,7 +1467,7 @@ function scenario(i,ep){const retour=TAB;if(i==null){const d=scDue(ep);i=d.lengt
  libere=enregistreur($('#sc-rec'));$('#sc-ia').onclick=()=>briefIA(x,$('#sc-iab'));
  $('#quit').onclick=()=>sortir(()=>go(retour));$('#sc-prev').onclick=()=>sortir(()=>scenario(meme[pos-1]));$('#sc-next').onclick=()=>sortir(()=>scenario(meme[pos+1]));
  $('#sc-go').onclick=()=>{stop();stop=rebours($('#sc-t'),x.d*60)};
- $('#sc-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Trame de réponse</div><ol class="lecture" style="padding-left:22px">${x.tr.map(p=>'<li style="margin-bottom:8px">'+p+'</li>').join('')}</ol><p class="src">Source : ${x.src}</p><div class="eyebrow" style="margin-top:12px">Note toi, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="sc-g"></div>`;
+ $('#sc-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Trame de réponse</div><p class="src" style="margin:4px 0 8px">La trame est le fil de ta réponse : suis les étapes dans l'ordre.${x.ap?' Sous chaque étape, « Concrètement » montre quoi dire ou quoi faire dans cette situation. Reprends l\'idée avec tes mots, ne récite pas.':''}</p><ol class="lecture" style="padding-left:22px">${x.tr.map((p,k)=>'<li style="margin-bottom:8px">'+p+(x.ap&&x.ap[k]?'<div class="ap"><b>Concrètement.</b> '+x.ap[k]+'</div>':'')+'</li>').join('')}</ol><p class="src">Source : ${x.src}</p><div class="eyebrow" style="margin-top:12px">Note toi, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="sc-g"></div>`;
   grilleEval($('#sc-g'),x.g,(sc,max)=>{libere();gradeFr(x.k,sc>=Math.ceil(max*.6),Math.round(15*sc/max),sc,max);toast(ic('check')+'Oral noté '+sc+' / '+max);const d=scDue(x.ep);d.length?scenario(d[0].i):go(retour)});$('#rev').scrollIntoView({block:'start',behavior:'smooth'})}}
 function etudeCas(i){const retour=TAB;if(!S.cas){toast('Active les études de cas dans le profil');return}if(i==null){const d=casDue();i=d.length?d[0].i:0}const x=CAS[i];let stop=()=>{};
  app.innerHTML=hud()+`<div class="card"><div class="eyebrow">Étude de cas ${i+1} / ${CAS.length} · épreuve ${x.ep} · ${x.d} min</div><h2>${x.t}</h2><div class="lecture"><p>${x.c}</p><div class="eyebrow" style="margin-top:8px">Données</div>${x.g}</div><div class="tip"><b>Sur papier, comme à l'examen.</b> Écris ta réponse complète avant de révéler le corrigé. À l'épreuve 1, c'est la démarche qui rapporte les points, pas seulement le chiffre final.</div><div style="display:flex;gap:8px;align-items:center;margin:10px 0"><button class="btn" id="cas-go">${ic('clock')}Lancer ${x.d} min</button><span class="mono" id="cas-t" role="timer" style="font-size:22px"></span></div><div id="rev"><button class="btn wide ghost" id="cas-show">${ic('eye')}Révéler le corrigé</button></div><div class="nav"><button class="btn ghost sm" id="cas-prev" ${i?'':'disabled'} aria-label="Cas précédent">${ic('chevL')}</button><button class="btn ghost sm" id="quit">Retour</button><button class="btn ghost sm" id="cas-next" ${i<CAS.length-1?'':'disabled'} aria-label="Cas suivant">${ic('chevR')}</button></div></div>`;
@@ -2368,7 +2369,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v37"></script>
-<script src="acces.js?v=bq5-v37"></script>
+<script src="entrainement.js?v=bq5-v38"></script>
+<script src="acces.js?v=bq5-v38"></script>
 </body>
 </html>
