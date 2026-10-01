@@ -838,7 +838,7 @@ const TOTALQ=ALLQ.length;
 const contrasteTitre=q=>q.t==='carte'&&/ : de quoi s'agit-il \?$/.test(q.q)?q.q.replace(/ : de quoi s'agit-il \?$/,''):fx(q.q);
 function contrastes(){let n=0;for(const k in S.cf||{}){const id='c-'+k;if(S.cf[k]<2||ITEM[id])continue;const [a,b]=k.split('|').map(i=>ITEM[i]);if(!a||!b||a.kind!=='q'||b.kind!=='q')continue;
  const ta=contrasteTitre(a.q),tb=contrasteTitre(b.q);
- ITEM[id]={id,kind:'q',li:a.li,b:a.b,q:{t:'carte',q:'Tu confonds ces deux là. Quelle est la différence entre « '+ta+' » et « '+tb+' » ? Réponds aux deux.',r:'<b>'+ta+'</b> : '+bonne(a.q)+'<br><b>'+tb+'</b> : '+bonne(b.q),e:fx(a.q.e)+' '+fx(b.q.e),src:a.q.src}};
+ ITEM[id]={id,kind:'q',li:a.li,b:a.b,b2:b.b&&b.b.id!==a.b.id?b.b:null,q:{t:'carte',q:'Tu confonds ces deux là. Réponds aux deux.<ol class="fbo"><li>'+ta+'</li><li>'+tb+'</li></ol>',r:'<ol class="fbo"><li>'+bonne(a.q)+'</li><li>'+bonne(b.q)+'</li></ol>',e:'',src:a.q.src}};
  if(!S.sr[id]){S.sr[id]=FSRS.init();n++}}
  if(n)save({ts:false});return n}
 /* Rétroliens : calculés au chargement à partir des liens sortants. */
@@ -1196,6 +1196,15 @@ document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest
    2 réponse libre, 3 « explique le comme à un apprenti ». Le niveau vit dans S.sr[id].lv (lp compte les
    réussites depuis le dernier palier). Une carte vue avant l'escalier compte au niveau 1. */
 const niveau=r=>!r?0:(r.lv==null?1:r.lv);
+/* Verso d'une carte retournée : la réponse est déjà affichée, la question est encore au dessus. L'explication
+   ne garde que les phrases qui apportent autre chose (les trois quarts de leurs mots absents de la question
+   et de la réponse), et perd le « Vrai. » ou « Faux. » hérité d'une question d'origine. */
+const motsDe=t=>plain(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').match(/[a-z0-9]{4,}/g)||[];
+function explSans(q){let e=String(q.e||'');if(!e.trim())return '';if(q.t!=='vf')e=e.replace(/^\s*(Vrai|Faux)\s*[.,:!]\s*/,'');
+ const connus=new Set(motsDe(bonne(q)).concat(motsDe(q.q)));
+ const garde=e.split(/(?<=[.!?])\s+(?=[A-ZÀ-Ý«])/).filter(ph=>{const m=motsDe(ph);if(m.length<3)return m.length>0&&!m.every(x=>connus.has(x));return m.filter(x=>connus.has(x)).length/m.length<.75});
+ return garde.join(' ')}
+const noteBtns=x=>x.b2?`<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note de la 1</button><button class="btn ghost sm" data-n="${x.b2.id}" style="margin-top:10px;margin-left:6px">${ic('book')}Note de la 2</button>`:`<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>`;
 const reponseTexte=q=>q.t==='qcm'?q.c[q.a]:q.t==='carte'?q.r:q.t==='match'?q.p.map(p=>p[0]+' : '+p[1]+'.').join(' '):'';
 const bonne=q=>q.t==='qcm'?q.c[q.a]:q.t==='carte'?q.r:q.t==='vf'?(q.a?'Vrai':'Faux'):q.t==='order'?'<ol class="fbo">'+q.i.map(y=>'<li>'+y+'</li>').join('')+'</ol>':q.t==='match'?'<ul class="fbo">'+q.p.map(p=>'<li><b>'+p[0]+'</b> : '+p[1]+'</li>').join('')+'</ul>':fmt(q.a)+' '+(q.u||'');
 /* Carte-problème : valeurs tirées à chaque revue (empreinte de la carte, du jour et du compteur de réponses),
@@ -1271,7 +1280,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
      const aide=TR.K[t]==='nombre'?(u?'… '+esc(u):nb+' chiffre'+(nb>1?'s':'')):esc(r.slice(0,1))+' …';
      e.innerHTML=`<i class="tn">${t+1}</i><span class="ta">${aide}</span>`});$('#indice').disabled=true};
    $('#flip').onclick=()=>{app.querySelectorAll('.trou').forEach((e,k)=>{e.textContent=TR.R[+e.dataset.t];e.classList.add('vu');e.style.animationDelay=k*70+'ms';e.removeAttribute('aria-label')});
-    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b><div>${fx(x.q.e)}</div></div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>${btnCom(x)}`;
+    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b>${(e=>e?`<div>${fx(e)}</div>`:'')(explSans(x.q))}</div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>${btnCom(x)}`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
@@ -1280,7 +1289,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
    <div class="hint" id="libre">Réponds dans ta tête ou à voix haute, puis retourne la carte.</div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();
-   $('#flip').onclick=()=>{$('#libre').hidden=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b><div>${fx(q.e)}</div>${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:10px">${ic('book')}Note d'origine</button>${btnCom(x)}</div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
+   $('#flip').onclick=()=>{$('#libre').hidden=true;$('#verso').innerHTML=`<div class="fb ok"><b>${bonne(q)}</b>${(e=>e?`<div>${fx(e)}</div>`:'')(explSans(q))}${srcLine(x)}${noteBtns(x)}${btnCom(x)}</div><div class="eyebrow" style="margin-top:10px">Compare avec ta réponse, puis note toi honnêtement.</div>`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok,q);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(6)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
@@ -2369,7 +2378,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v39"></script>
-<script src="acces.js?v=bq5-v39"></script>
+<script src="entrainement.js?v=bq5-v40"></script>
+<script src="acces.js?v=bq5-v40"></script>
 </body>
 </html>
