@@ -428,7 +428,7 @@ const jx=()=>dayN(EXAMEN)-tN();
 /* Clé unique bq1, S.v = 3 (cartes FSRS). Au démarrage : copie de sécurité de la v2, migration,
    import de Mesure Quest (mq2). Rien n'est jamais effacé : les champs inconnus sont gardés. */
 const SKEY='bq1';
-const DEF={v:3,xp:0,coins:0,done:{},sr:{},fr:{},rc:{},susp:{},cf:{},streak:{last:'',n:0,best:0,ms:0},day:{d:'',n:0,ok:0,goal:false,nw:0},notif:{on:true,h:19,m:30},goal:20,nq:10,freeze:0,sfx:true,hap:true,hist:{},quests:{d:'',l:[]},lastOpen:'',rankSeen:'',
+const DEF={v:3,xp:0,coins:0,done:{},sr:{},fr:{},rc:{},susp:{},cf:{},streak:{last:'',n:0,best:0,ms:0},day:{d:'',n:0,ok:0,goal:false,nw:0},notif:{on:true,h:19,m:30},goal:20,nq:25,freeze:0,sfx:true,hap:true,hist:{},quests:{d:'',l:[]},lastOpen:'',rankSeen:'',
  notes:{},notesTs:{},log:[],ret:{},err:[],cas:true,conf:{sais:[0,0],hesite:[0,0],devine:[0,0]},lect:{t:17,lh:1.5,w:65,hc:false,f:'sys'},ts:0};
 /* Fusion en profondeur : un sous-objet sauvegardé ne remplace jamais le défaut en bloc,
    sinon tout nouveau champ (lect.w, day.nw…) arriverait à undefined. */
@@ -1001,14 +1001,17 @@ const chapFini=li=>cartesChap(li).every(x=>S.sr[x.id]);
 function nextChapter(){for(let li=1;li<=NCH;li++)if(chapVu(li)&&!chapFini(li))return li;for(let li=1;li<=NCH;li++)if(!chapFini(li))return li;return 0}
 /* Nouvelles du jour calées sur la charge : environ 60 cartes par jour tiennent dans 45 minutes.
    Les révisions dues passent d'abord, les nouvelles prennent la place qui reste. */
-const CHARGE_JOUR=60;
-function quotaNouv(){newDay();const dues_=dues().length+(S.day.n||0);return Math.max(0,Math.min((S.nq||10)-(S.day.nw||0),CHARGE_JOUR-dues_))}
+/* Réglage du 1er oct. 2026, choisi avec Gab pour voir 90 % des cartes avant le 22 mars 2027 (simulation :
+   2800 cartes, 245 vues, trois jours manqués par mois) : 75 cartes par jour au plus, 25 nouvelles, rétention
+   visée 0,85 partout. À 60 cartes, 10 nouvelles et 0,9, seules 60 % des cartes étaient vues à temps. */
+const CHARGE_JOUR=75,NQ_DEF=25;
+function quotaNouv(){newDay();const dues_=dues().length+(S.day.n||0);return Math.max(0,Math.min((S.nq||NQ_DEF)-(S.day.nw||0),CHARGE_JOUR-dues_))}
 /* Épreuves de chaque chapitre, et poids officiels (40/20/20/20). */
 const EPRDE={};for(let li=1;li<=NCH;li++)EPRDE[li]=EPR.map((e,i)=>e.l.includes(li)?i:-1).filter(i=>i>=0);
 const POIDS=EPR.map(e=>(parseFloat(String(e.p).replace(',','.'))||25)/100);
 /* Rétention visée : 0,85 pour les cartes de l'épreuve 4 seule (elle porte la moitié des cartes
    pour 20 % de la note), 0,9 ailleurs. Des intervalles un peu plus longs y libèrent du temps. */
-const retDe=id=>{const x=ITEM[id],e=x&&EPRDE[x.li];return e&&e.length===1&&e[0]===3?.85:.9};
+const retDe=id=>{const x=ITEM[id],e=x&&EPRDE[x.li];return .85};
 /* Cartes jamais vues d'un chapitre : tous les points clés, puis les questions. */
 const neuvesChap=li=>L[li].b.flatMap(b=>KBYNOTE[b.id]||[]).concat(L[li].b.flatMap(b=>QBYNOTE[b.id]||[])).filter(x=>!S.sr[x.id]).map(x=>x.id);
 /* Nouvelles du jour, tirées selon le poids des épreuves : chaque carte va au chapitre dont une épreuve
@@ -1405,7 +1408,7 @@ function examenBlanc(i){let pool,titre;const o={examen:true,epr:i==null?-1:i};
 function reviserHub(){const f=fileDuJour(),fr=frDue(),frag=Object.keys(S.sr).filter(id=>ITEM[id]&&etat(S.sr[id])==='frag'),tot=f.retard.length+f.auj.length+f.nv.length;
  app.innerHTML=hud()+`<div class="hero"><h1>Réviser</h1><p>Une carte à la fois. Tu réponds, tu vois l'explication, tu dis si c'était difficile. FSRS ramène chaque carte juste avant l'oubli.</p></div>
  <div class="grid3"><div class="stat new"><small>Nouvelles</small><span>${f.nv.length}</span></div><div class="stat due"><small>À revoir</small><span>${f.auj.length}</span></div><div class="stat late"><small>En retard</small><span>${f.retard.length}</span></div></div>
- ${tot?`<div style="height:12px"></div><button class="btn wide" id="go">${ic('review')}Commencer la file du jour (${Math.min(tot,80+f.nv.length)})</button>`:`<div class="tip" style="margin-top:12px">Rien à réviser pour l'instant. Le quota de nouvelles du jour (${S.nq||10}) est atteint : reviens demain, ou lance un examen blanc.</div>`}
+ ${tot?`<div style="height:12px"></div><button class="btn wide" id="go">${ic('review')}Commencer la file du jour (${Math.min(tot,80+f.nv.length)})</button>`:`<div class="tip" style="margin-top:12px">Rien à réviser pour l'instant. Le quota de nouvelles du jour (${S.nq||NQ_DEF}) est atteint : reviens demain, ou lance un examen blanc.</div>`}
  ${frag.length?`<div style="height:8px"></div><button class="btn wide ghost" id="frag">Travailler mes ${Math.min(frag.length,15)} points fragiles</button>`:''}
  ${fr.length?`<div style="height:8px"></div><button class="btn wide ghost" id="rec">${ic('mic')}Rappel libre · réciter ${pl(Math.min(fr.length,5),'note')}</button>`:''}
  <div class="card" style="margin-top:14px"><div class="eyebrow">Examens blancs par épreuve</div><p style="color:var(--ink2);font-size:14.5px;margin:6px 0 10px">Au format de l'épreuve, chronométrés, chapitres mélangés. La note sur 6 est gardée dans les statistiques.</p>${EPR.map((e,i)=>{const st=eprStat(i),f=FMT[i];return `<button class="lrow" data-epr="${i}"><div><b>${e.n}</b> · ${esc(e.t)} · ${e.p}<small>${f.n} questions en ${f.m} min${f.s?' · '+f.s:''} · ${st.seen} % vu · ${st.mast} % ancré</small></div>${ic('chevR')}</button>`}).join('')}
@@ -2328,7 +2331,7 @@ function profil(){const r=rank(),all=TOUS(),E=compteEtats(all),vus=all.length-E.
  <button class="btn ghost sm" id="lreset">Revenir au réglage confortable</button></div>
  <div class="card"><div class="eyebrow">Rythme</div>
  <div class="row"><span>Objectif quotidien</span><div class="seg">${[10,20,30].map(g=>`<button class="${(S.goal||20)===g?'on':''}" data-goal="${g}">${g}</button>`).join('')}</div></div>
- <div class="row"><span>Nouvelles cartes par jour</span><div class="seg">${[5,10,20].map(g=>`<button class="${(S.nq||10)===g?'on':''}" data-nq="${g}">${g}</button>`).join('')}</div></div>
+ <div class="row"><span>Nouvelles cartes par jour</span><div class="seg">${[10,20,25].map(g=>`<button class="${(S.nq||NQ_DEF)===g?'on':''}" data-nq="${g}">${g}</button>`).join('')}</div></div>
  <label class="row"><span>Études de cas rédigées<br><small style="color:var(--ink2);font-size:13px">Chronométrées, notées sur 10 par grille. D'autres viendront après le cours AE11. Le dimanche, elles passent en tête.</small></span><input type="checkbox" id="cas" ${S.cas?'checked':''}></label>
  <label class="row"><span>Mon classeur est celui de Gab<br><small style="color:var(--ink2);font-size:13px">Après chaque recherche, affiche l'épreuve, le numéro et la page dans ce classeur. Laisse éteint si tu as ton propre classeur.</small></span><input type="checkbox" id="monclx" ${S.monClx?'checked':''}></label>
  <label class="row"><span>Sons</span><input type="checkbox" id="sfx" ${S.sfx?'checked':''}></label>
@@ -2385,7 +2388,7 @@ function brancherSauv(){app.querySelectorAll('[data-sauv]').forEach(b=>b.onclick
 
 
 /* ===================== DÉMARRAGE ===================== */
-charger();contrastes();appliquerLecture();newDay();demanderCloud();
+charger();if(!S.reg||S.reg<2){S.nq=NQ_DEF;S.reg=2}contrastes();appliquerLecture();newDay();demanderCloud();
 /* L'état iCloud poussé par l'app avant que le moteur existe est rejoué ici. */
 if(window.__cloudEnAttente){const t=window.__cloudEnAttente;window.__cloudEnAttente=null;window.recevoirCloud(t)}
 bienvenue();go('auj');pushRappels();
@@ -2393,7 +2396,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v42"></script>
-<script src="acces.js?v=bq5-v42"></script>
+<script src="entrainement.js?v=bq5-v44"></script>
+<script src="acces.js?v=bq5-v44"></script>
 </body>
 </html>
