@@ -836,11 +836,26 @@ const TOTALQ=ALLQ.length;
    moins (S.cf, compté au bilan) donnent une carte « quelle est la différence ? » qui pose les deux
    questions côte à côte, en réponse libre, verso les deux réponses. Créée due aujourd'hui. */
 const contrasteTitre=q=>q.t==='carte'&&/ : de quoi s'agit-il \?$/.test(q.q)?q.q.replace(/ : de quoi s'agit-il \?$/,''):fx(q.q);
-function contrastes(){let n=0;for(const k in S.cf||{}){const id='c-'+k;if(S.cf[k]<2||ITEM[id])continue;const [a,b]=k.split('|').map(i=>ITEM[i]);if(!a||!b||a.kind!=='q'||b.kind!=='q')continue;
+/* Deux cartes ne sont « confondables » que si l'une peut vraiment être prise pour l'autre : même note,
+   pas deux faces de la même question, et soit la réponse de l'une figure parmi les mauvais choix de
+   l'autre, soit ce sont deux définitions (ou deux termes) de la même liste. Rater deux cartes sans
+   rapport dans la même séance ne crée plus rien (retour de Gab du 1er oct. 2026). */
+function confondables(a,b){if(!a||!b||a.kind!=='q'||b.kind!=='q'||a.b.id!==b.b.id)return false;const qa=a.q,qb=b.q;
+ if((qa.de&&qa.de===qb.de)||qa.de===b.id||qb.de===a.id)return false;
+ const nc=t=>plain(t).toLowerCase().trim(),rep=q=>q.t==='qcm'?nc(q.c[q.a]):q.t==='carte'?nc(q.r):'';
+ const ra=rep(qa),rb=rep(qb);if(!ra||!rb||ra===rb)return false;
+ const dans=(r,q)=>q.t==='qcm'&&q.c.some((c,k)=>k!==q.a&&nc(c)===r);
+ if(dans(ra,qb)||dans(rb,qa))return true;
+ const typ=q=>q.t!=='carte'?'':/ : de quoi s'agit-il \?$/.test(q.q)?'def':/^Quel terme correspond à/.test(q.q)?'terme':'';
+ return !!typ(qa)&&typ(qa)===typ(qb)}
+function contrastes(){let n=0,menage=0;for(const k in S.cf||{}){const id='c-'+k;const [a,b]=k.split('|').map(i=>ITEM[i]);
+  /* ménage : une paire comptée avec l'ancienne règle et qui n'est pas confondable disparaît, sa carte aussi */
+  if(a&&b&&!confondables(a,b)){delete S.cf[k];if(S.sr[id]){delete S.sr[id];delete ITEM[id]}menage++;continue}
+  if(S.cf[k]<2||ITEM[id])continue;if(!a||!b||a.kind!=='q'||b.kind!=='q')continue;
  const ta=contrasteTitre(a.q),tb=contrasteTitre(b.q);
  ITEM[id]={id,kind:'q',li:a.li,b:a.b,b2:b.b&&b.b.id!==a.b.id?b.b:null,q:{t:'carte',q:'Tu confonds ces deux là. Réponds aux deux.<ol class="fbo"><li>'+ta+'</li><li>'+tb+'</li></ol>',r:'<ol class="fbo"><li>'+bonne(a.q)+'</li><li>'+bonne(b.q)+'</li></ol>',e:'',src:a.q.src}};
  if(!S.sr[id]){S.sr[id]=FSRS.init();n++}}
- if(n)save({ts:false});return n}
+ if(n||menage)save({ts:false});return n}
 /* Rétroliens : calculés au chargement à partir des liens sortants. */
 NL.forEach(b=>(b.liens||[]).forEach(t=>{if(NOTES[t]&&t!==b.id)(BACK[t]=BACK[t]||[]).includes(b.id)||BACK[t].push(b.id)}));
 const coursOf=li=>COURS.find(c=>c.l.includes(li))||{id:L[li].cours||'',t:''};
@@ -1337,7 +1352,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   S.coins+=nok;if(vus>=Math.min(5,list.length))questAdd('rev');
   /* paires confondues : deux cartes ratées du même chapitre comptées ensemble ; à deux reprises, carte de contraste */
   const rq=[...new Set(miss)].filter(x=>x.kind==='q'&&!x.id.startsWith('c-'));S.cf=S.cf||{};
-  for(let a=0;a<rq.length;a++)for(let b=a+1;b<rq.length;b++)if(rq[a].li===rq[b].li){const k=[rq[a].id,rq[b].id].sort().join('|');S.cf[k]=(S.cf[k]||0)+1}
+  for(let a=0;a<rq.length;a++)for(let b=a+1;b<rq.length;b++)if(confondables(rq[a],rq[b])){const k=[rq[a].id,rq[b].id].sort().join('|');S.cf[k]=(S.cf[k]||0)+1}
   const ks=Object.keys(S.cf);if(ks.length>300)ks.sort((x,y)=>S.cf[x]-S.cf[y]).slice(0,ks.length-300).forEach(k=>delete S.cf[k]);
   const nc=o.examen?0:contrastes();
   if(o.examen)S.log=(S.log||[]).concat([{d:today(),t:titre,e:o.epr==null?-1:o.epr,n:nok,tot:FIN?N0:vus,f:FIN?1:0}]).slice(-100);
@@ -2378,7 +2393,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v40"></script>
-<script src="acces.js?v=bq5-v40"></script>
+<script src="entrainement.js?v=bq5-v41"></script>
+<script src="acces.js?v=bq5-v41"></script>
 </body>
 </html>
