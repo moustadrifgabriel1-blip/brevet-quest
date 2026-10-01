@@ -2012,7 +2012,7 @@ function monter3D(T,jeton){
  const projP=(x,y,z)=>{const w=M[3]*x+M[7]*y+M[11]*z+M[15];return w<=.01?null:[((M[0]*x+M[4]*y+M[8]*z+M[12])/w*.5+.5)*W,(-(M[1]*x+M[5]*y+M[9]*z+M[13])/w*.5+.5)*H,w]};
  const poser_=(L_,x,y,o,onc)=>{const tf=`translate3d(${Math.round(x)}px,${Math.round(y)}px,0)`;if(tf!==L_.tf){L_.el.style.transform=tf;L_.tf=tf}const oo=Math.round(o*100)/100;if(oo!==L_.o){L_.el.style.opacity=oo;L_.o=oo}L_.el.classList.toggle('on',!!onc&&o>.3)};
  function etiquettes(){proj();const boxes=[],zf=lu((O.r-1.5)/1.1),px=cam.position.x,py=cam.position.y,pz=cam.position.z,cxU=U.x+U.w/2,cyU=U.y+U.h/2;
-  const libre=(x,y,w,h)=>{for(const b of boxes)if(x<b[0]+b[2]&&b[0]<x+w&&y<b[1]+b[3]&&b[1]<y+h)return false;return true};
+  const libre=(x,y,w,h,dur)=>{for(const b of boxes)if((!dur||b[4])&&x<b[0]+b[2]&&b[0]<x+w&&y<b[1]+b[3]&&b[1]<y+h)return false;return true};
   const dedans=(x,y,w,h,large)=>{const m=large?-10:0;return x>=U.x+2+m&&y>=U.y-4+m&&x+w<=U.x+U.w-2-m&&y+h<=U.y+U.h+4-m};
   /* Les boîtes des boutons ne bougent qu'au redimensionnement ou quand un panneau s'ouvre. Les
      relire à chaque image forçait un recalcul de mise en page synchrone soixante fois par seconde,
@@ -2022,7 +2022,7 @@ function monter3D(T,jeton){
      rendu. On les garde 400 ms, et zone() les invalide dès qu'un panneau s'ouvre. */
   const tb=performance.now();
   if(!UIB||tb-UIBt>400){UIBt=tb;UIB=[];const l=lay.getBoundingClientRect();
-   for(const el of UI)if(el.offsetParent&&getComputedStyle(el).opacity>.5){const r=el.getBoundingClientRect();UIB.push([r.left-l.left-4,r.top-l.top-4,r.width+8,r.height+8])}}
+   for(const el of UI)if(el.offsetParent&&getComputedStyle(el).opacity>.5){const r=el.getBoundingClientRect();UIB.push([r.left-l.left-4,r.top-l.top-4,r.width+8,r.height+8,1])}}
   for(const b of UIB)boxes.push(b);
   /* notes à étiqueter : la note choisie et ses voisines, sinon celles proches du centre (proximité et degré) */
   let cand=[];const cap=SEL!=null?Math.min(20,1+ADJ[SEL].length):12;
@@ -2032,15 +2032,20 @@ function monter3D(T,jeton){
   const noteOp=SEL!=null?1:FK!=null?1:lu((.9-zf)*2.2);
   /* Un titre gêné par un autre n'est pas abandonné tout de suite : on l'essaie un cran plus haut
      puis un cran plus bas, assez près du point pour qu'on sache toujours de quelle note il parle. */
-  const placer=(i,prio,pin)=>{if(SW[i]<=.01)return null;const [w,h]=taille(i,pin),sz=ST[i]*fpx/SW[i];
+  const placer=(i,prio,pin,dur)=>{if(SW[i]<=.01)return null;const [w,h]=taille(i,pin),sz=ST[i]*fpx/SW[i];
    const x0=Math.max(U.x+4,Math.min(U.x+U.w-4-w,SX[i]-w/2)),y0=SY[i]-h-sz*.13-2;
-   for(const dy of (prio?[0]:pin?[0,-13,13]:[0,-16,16,-32,32])){const y=y0+dy;
-    if(!dedans(x0,y,w,h,pin))continue;if(!prio&&!libre(x0,y,w,h))continue;
-    boxes.push([x0-3,y-2,w+6,h+4]);return [x0,y,!!pin]}
+   /* Une pastille est petite : avant de la retirer, on l'essaie aussi sur les côtés du point. Sans cela,
+      les voisines d'un amas serré perdaient leur numéro puis le retrouvaient à chaque tour de caméra. */
+   for(const [dx,dy] of (prio?[[0,0]]:pin?[[0,0],[0,-13],[0,13],[-17,0],[17,0],[-17,-13],[17,-13],[-17,13],[17,13],[0,-26],[0,26]]:[[0,0],[0,-16],[0,16],[0,-32],[0,32]])){const x=x0+dx,y=y0+dy;
+    if(!dedans(x,y,w,h,pin))continue;if(!prio&&!libre(x,y,w,h,dur))continue;
+    boxes.push([x-3,y-2,w+6,h+4,pin?1:0]);return [x,y,!!pin]}
    return null};
   const pris=[],mis=new Set();
   const tenter=(i,prio)=>{if(mis.has(i))return;let p=placer(i,prio);
    if(!p&&NUM.has(i))p=placer(i,false,true);
+   /* Dernier recours pour un numéro déjà à l'écran : il peut mordre sur un titre voisin, jamais sur
+      une autre pastille ni sur l'interface. Mieux vaut un numéro un peu serré qu'un numéro qui clignote. */
+   if(!p&&NUM.has(i)&&SLOT.has(i))p=placer(i,false,true,true);
    if(p){pris.push([i,p]);mis.add(i)}};
   let first=SEL!=null?SEL:HOV;if(first>=0&&first!=null)tenter(first,true);
   /* Les titres déjà à l'écran passent avant les nouveaux. Sans cette priorité, le moindre
@@ -2362,7 +2367,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v34"></script>
-<script src="acces.js?v=bq5-v34"></script>
+<script src="entrainement.js?v=bq5-v35"></script>
+<script src="acces.js?v=bq5-v35"></script>
 </body>
 </html>
