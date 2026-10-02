@@ -147,6 +147,14 @@ a[data-n]:hover{background:var(--tint)}
 .stat.late span{color:var(--bad)}.stat.due span{color:var(--accent)}.stat.new span{color:var(--ok)}
 .foot{margin-top:24px;text-align:center;font-size:13px;color:var(--ink2)}.foot button{color:var(--accent);font-weight:600;margin:0 6px;min-height:44px;padding:0 6px}
 .tbl{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}.tbl th{text-align:left;font-size:12.5px;color:var(--ink2);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line2)}.tbl td{padding:8px 4px;border-bottom:1px solid var(--line)}.tbl td.r,.tbl th.r{text-align:right;white-space:nowrap}
+.xrecap{display:flex;flex-direction:column;min-height:calc(100dvh - 40px - var(--sat) - var(--sab))}.xrecap .card{flex:1;margin:8px 0}
+.xgrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}.xgrid button{width:40px;height:40px;border-radius:11px;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;background:var(--card2);color:var(--ink2);box-shadow:inset 0 0 0 1px var(--line)}
+.xgrid .f{background:var(--accent);color:var(--on);box-shadow:none}.xgrid .p{box-shadow:inset 0 0 0 2px var(--gold);color:var(--ink)}.xgrid .c{outline:2.5px solid var(--ink);outline-offset:1.5px}
+.sess.exam .card{flex:none}.sess.exam .nav .btn{flex:1}
+.xregles{text-align:left;font-size:15px;line-height:1.5;margin:14px auto 0;padding-left:20px;max-width:340px}
+.xcor .xc{border-left:4px solid var(--bad)}.xcor .xc.ok{border-left-color:var(--ok)}.xcor .xc.nr{border-left-color:var(--gold)}
+.xr{display:grid;grid-template-columns:92px 1fr;gap:8px;margin-top:8px;font-size:15px}.xr>span{color:var(--ink2);font-size:13px;font-weight:700;padding-top:2px}.xr.bon>div{font-weight:700;color:var(--ok)}.xr .fbo{margin:0;padding-left:18px}
+.xe{margin-top:8px;color:var(--ink2)}.xbons{margin-top:10px}.xbons summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer}
 .gnote{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}.gnote.ok{color:var(--ok)}.gnote.mid{color:var(--gold)}.gnote.ko{color:var(--bad)}
 .verdict{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:12px 14px;margin:10px 0 0;font-size:15px;line-height:1.45}.verdict.ok{background:var(--okbg)}.verdict.ko{background:var(--badbg)}.verdict>.ic{width:20px;height:20px;flex:none;margin-top:1px}
 /* navigation : barre en bas sur téléphone, barre latérale dès 900 px */
@@ -1114,7 +1122,7 @@ function notePages(b){const p=b.p||[];const lens=p.map(x=>plain(x).length),tot=l
  if(tot<=1200||p.length<2)return [p];let cum=0,cut=1;for(let i=0;i<p.length-1;i++){cum+=lens[i];cut=i+1;if(cum>=tot/2-plain(b.k).length/2)break}
  return [p.slice(0,cut),p.slice(cut)]}
 function corpsNote(b,page){const pages=notePages(b),P=pages.length,pg=Math.max(0,Math.min(page||0,P-1)),c=coursOf(b.li);
- let h=`<div class="notepage lecture"><div class="meta"><span><i class="cdot" style="background:${couleurCours(c.id)}"></i> ${esc(c.id)} · ${esc(c.t)}</span><span>ch. ${b.li} · ${esc(L[b.li].t)}</span></div><h1>${b.h}</h1>${b.src?`<div class="src" style="margin-top:0">Source : ${b.src}</div>`:''}${tagAide(b.li)}`;
+ let h=`<div class="notepage lecture"><div class="meta"><span><i class="cdot" style="background:${couleurCours(c.id)}"></i> ${esc(c.id)} · ${esc(c.t)}</span><span>ch. ${b.li} · ${esc(L[b.li].t)}</span></div><h1>${b.h}</h1>${b.src?`<div class="src" style="margin-top:0">Source : ${srcTxt(b.src)}</div>`:''}${tagAide(b.li)}`;
  if(pg===0){if(b.k)h+=`<div class="key"><div class="eyebrow">Points clés</div>${fmtKey(b.k)}</div>`;if(b.fig)h+=`<div class="fig zoom" role="button" tabindex="0" aria-label="Agrandir le schéma">${b.fig}</div>`}
  h+=pages[pg].map(p=>para(lk(p))).join('');
  if(pg===P-1&&b.lab&&LAB[b.lab])h+=`<div class="fig"><div class="eyebrow">Laboratoire · touche les curseurs</div><div class="lab" data-lab>${''}</div><div data-labout style="margin-top:12px"></div></div>`;
@@ -1166,8 +1174,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#panel')){fermer
  else if(e.key===' '||e.key==='Enter'){const b=$('#flip')||$('#nx');if(b){e.preventDefault();b.click()}}});
 
 /* ===================== SOURCES, CLASSEUR, POINTS RATÉS ===================== */
+/* Sur une carte, deux numéros de chapitre se croisaient : celui du jeu en haut (« ch. 7 ») et celui du
+   support en bas (« §6 »). Retour de Gab, 2 oct. 2026 : en haut, le cours et le thème, sans numéro ;
+   en bas, la référence du support écrite « ch. 6 », comme partout ailleurs. */
+const theme=li=>esc((coursOf(li).id?coursOf(li).id+' · ':'')+L[li].t);
+const srcTxt=s=>String(s||'').replace(/§\s*/g,'ch. ');
 const srcOf=x=>(x.q&&x.q.src)||(x.b&&x.b.src)||'';
-const srcLine=x=>{const s=srcOf(x);return s?`<div class="src">Source : ${s}</div>`:''};
+const srcLine=x=>{const s=srcOf(x);return s?`<div class="src">Source : ${srcTxt(s)}</div>`:''};
 /* Épreuves 2 et 3 : classeur autorisé. Pour un calcul, on peut ouvrir la méthode avant de répondre. */
 function classeur(x){if(!x.q||x.q.t!=='num'||aide(x.li)==='coeur')return '';return `<details class="classeur"><summary>${ic('book')}Ouvrir le classeur : formule et méthode</summary><div class="lecture">${(x.b.p||[]).map(p=>para(lk(p))).join('')}</div></details>`}
 /* Rater trois fois la même carte, ce n'est plus un trou de mémoire : on renvoie à la note. */
@@ -1248,7 +1261,128 @@ const CONFH=`<div class="conf" role="group" aria-label="Ta confiance avant de r�
 /* o.titre, o.examen (note automatique 3 ou 1, résultat journalisé dans S.log), o.epr, o.retour. */
 /* o.libre : révision hors planning, demandée à la main (une note, un chapitre déjà à jour).
    Rien n'est écrit dans FSRS : relire ne doit ni avancer ni reculer une échéance. */
-function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length){toast(ic('check')+'Aucune carte à montrer');return}
+/* ===================== EXAMEN BLANC : COMME LE JOUR DE L'ÉPREUVE ===================== */
+/* Demande de Gab (2 oct. 2026) : on répond sans voir la réponse, on peut passer une question et y
+   revenir, on rend sa copie à la fin. Aucune correction, aucun son, aucun XP avant la remise.
+   rep[k] porte la réponse en cours (modifiable jusqu'à la remise), vu[k] les questions déjà ouvertes.
+   Rien n'est écrit dans le suivi avant « Rendre ma copie » : quitter sans rendre ne laisse aucune trace.
+   À la remise : note FSRS 3 ou 1 pour les questions répondues (l'échéance d'une carte pas encore due
+   reste protégée par noter()), les questions sans réponse comptent fausses dans la note sur 6. */
+function examen(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length){toast(ic('check')+'Aucune question à montrer');return}
+ fermerPanneau();document.body.classList.add('focus');tabs();stopChrono();
+ const N=list.length,titre=o.titre||'Examen blanc',retour=o.retour||TAB;
+ /* la question est figée une fois pour toute la séance : valeurs d'un calcul, ordre des propositions */
+ const Q=list.map(id=>{const x=ITEM[id],q=x.q.t==='calc'?instancier(x.q,x.id):x.q,s={x,q};
+  if(q.t==='qcm')s.perm=shuffle(q.c.map((c,k)=>k));
+  if(q.t==='order')s.items=shuffle(q.i);
+  if(q.t==='match'){s.l=shuffle(q.p.map(p=>p[0]));s.r=shuffle(q.p.map(p=>p[1]))}
+  return s});
+ const rep=Q.map(()=>null),cf=Q.map(()=>null),vu=Q.map(()=>false);
+ let i=0,T0=Date.now(),FIN=0,rendu=false;
+ const faite=k=>{const q=Q[k].q,v=rep[k];if(v==null)return false;
+  if(q.t==='num')return String(v).trim()!==''&&!isNaN(parseFloat(String(v).replace(',','.')));
+  if(q.t==='order')return v.length===q.i.length;if(q.t==='match')return Object.keys(v).length===q.p.length;return true};
+ const nfaites=()=>Q.filter((s,k)=>faite(k)).length;
+ const vides=()=>Q.map((s,k)=>k).filter(k=>!faite(k));
+ const restant=()=>{const s=Math.max(0,Math.ceil((FIN-Date.now())/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+ const head=()=>`<div class="shead"><button class="back" id="squit" aria-label="Quitter l'examen">${ic('x')}</button><div class="ebar" role="progressbar" aria-label="Questions répondues" aria-valuemin="0" aria-valuemax="${N}" aria-valuenow="${nfaites()}"><i id="xbar" style="width:${nfaites()/N*100}%"></i></div><span class="cnt">${i+1} / ${N}</span>${FIN?`<span class="chrono${FIN-Date.now()<6e4?' fin':''}" id="chr" role="timer" aria-label="Temps restant">${restant()}</span><span class="tjauge" aria-hidden="true"><i id="tji" style="width:${Math.max(0,Math.min(100,(FIN-Date.now())/(o.min*6e4)*100))}%"></i></span>`:''}</div>`;
+ const grille=()=>`<div class="xgrid" role="group" aria-label="Aller à une question">${Q.map((s,k)=>`<button data-x="${k}" class="${faite(k)?'f':vu[k]?'p':''}${k===i?' c':''}" aria-label="Question ${k+1}, ${faite(k)?'répondue':vu[k]?'passée':'pas encore vue'}"${k===i?' aria-current="true"':''}>${k+1}</button>`).join('')}</div>`;
+ /* après une réponse : la barre, la grille et le libellé du bouton suivent, sans redessiner la question */
+ const maj=()=>{const b=$('#xbar');if(b)b.style.width=nfaites()/N*100+'%';const g=app.querySelector('.xgrid');if(g){g.outerHTML=grille();brancheGrille()}
+  const nx=$('#nx');if(nx)nx.innerHTML=libelleSuivant()};
+ /* premier passage : la question d'après. Une fois le bout atteint (tour), on ne repasse que par les
+    questions restées sans réponse, dans l'ordre ; quand il n'y en a plus devant, c'est l'écran de remise. */
+ let tour=false;
+ const cible=()=>{if(!tour&&i<N-1)return i+1;const v=vides().filter(k=>k!==i);if(!tour)return v.length?v[0]:-1;const d=v.filter(k=>k>i);return d.length?d[0]:-1};
+ const libelleSuivant=()=>(cible()<0?'Terminer':faite(i)?'Suivante':'Passer')+ic('chevR');
+ const brancheGrille=()=>app.querySelectorAll('.xgrid [data-x]').forEach(b=>b.onclick=()=>{i=+b.dataset.x;show()});
+ /* Suivante : la question d'après ; arrivé au bout, retour sur la première question laissée sans réponse
+    (qu'on n'a pas sous les yeux), sinon l'écran de remise. */
+ const avance=()=>{const c=cible();if(c<0)return remise();if(!tour&&i===N-1){tour=true;const n=vides().filter(k=>k!==i).length;toast(ic('refresh')+n+' question'+(n>1?'s':'')+' sans réponse : on y revient')}i=c;show()};
+ const show=()=>{vu[i]=true;const s=Q[i],x=s.x,q=s.q;let body='';
+  if(q.t==='qcm')body=`<div class="opts">${s.perm.map((k,p)=>`<button class="opt${rep[i]===k?' sel':''}" data-k="${k}" aria-pressed="${rep[i]===k}"><span class="k">${'ABCD'[p]}</span>${q.c[k]}</button>`).join('')}</div>`;
+  if(q.t==='vf')body=`<div class="opts"><button class="opt${rep[i]===1?' sel':''}" data-k="1" aria-pressed="${rep[i]===1}"><span class="k">V</span>Vrai</button><button class="opt${rep[i]===0?' sel':''}" data-k="0" aria-pressed="${rep[i]===0}"><span class="k">F</span>Faux</button></div>`;
+  if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off" aria-label="Ta réponse" value="${esc(rep[i]==null?'':rep[i])}"><span class="u">${q.u||''}</span></div>`;
+  if(q.t==='order')body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche les étapes dans le bon ordre. Touche une étape numérotée pour la retirer.</p><div class="opts order" id="ord"></div><div class="ordact"><button class="btn ghost sm" id="oclr">${ic('x')}Tout effacer</button></div>`;
+  if(q.t==='match')body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche un terme, puis sa définition. Touche une paire faite pour la défaire.</p><div class="match" id="mt"></div><div class="ordact"><button class="btn ghost sm" id="oclr">${ic('x')}Tout effacer</button></div>`;
+  app.innerHTML=`<div class="sess exam">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.support?' · '+o.support:''}</span><span>${theme(x.li)}</span></div><div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}
+   <div class="nav"><button class="btn ghost" id="pv"${i?'':' disabled'}>${ic('chevL')}Précédente</button><button class="btn" id="nx">${libelleSuivant()}</button></div>
+   ${grille()}<div class="nav" style="justify-content:center;margin-top:12px"><button class="btn ghost sm" id="xfin">${ic('check')}Rendre ma copie</button></div></div></div>`;
+  $('#squit').onclick=quitter_;$('#pv').onclick=()=>{if(i){i--;show()}};$('#nx').onclick=avance;$('#xfin').onclick=remise;brancheGrille();
+  /* confiance : facultative, modifiable comme la réponse */
+  app.querySelectorAll('.conf [data-cf]').forEach(b=>{b.setAttribute('aria-pressed',String(cf[i]===b.dataset.cf));b.onclick=()=>{cf[i]=cf[i]===b.dataset.cf?null:b.dataset.cf;app.querySelectorAll('.conf [data-cf]').forEach(z=>z.setAttribute('aria-pressed',String(z.dataset.cf===cf[i])))}});
+  /* une proposition retouchée s'enlève : on peut rendre une question sans réponse */
+  if(q.t==='qcm'||q.t==='vf')app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const k=+b.dataset.k;rep[i]=rep[i]===k?null:k;app.querySelectorAll('.opt').forEach(z=>{const on=+z.dataset.k===rep[i];z.classList.toggle('sel',on);z.setAttribute('aria-pressed',String(on))});maj()});
+  if(q.t==='num'){const n=$('#nin');n.oninput=()=>{rep[i]=n.value;maj()};n.onkeydown=e=>{if(e.key==='Enter')avance()}}
+  if(q.t==='order'){const draw=()=>{const pick=rep[i]||[];$('#ord').innerHTML=s.items.map((it,k)=>{const p=pick.indexOf(it);return `<button class="opt${p>=0?' sel':''}" data-k="${k}"><span class="n">${p>=0?p+1:'·'}</span>${it}</button>`}).join('');$('#oclr').disabled=!pick.length;
+    app.querySelectorAll('#ord .opt').forEach(b=>b.onclick=()=>{const pk=(rep[i]||[]).slice(),it=s.items[+b.dataset.k],p=pk.indexOf(it);if(p>=0)pk.splice(p,1);else pk.push(it);rep[i]=pk.length?pk:null;draw();maj()})};
+   $('#oclr').onclick=()=>{rep[i]=null;draw();maj()};draw()}
+  if(q.t==='match'){let sel=null;const draw=()=>{const pairs=rep[i]||{},ks=Object.keys(pairs),no=j=>j>=0?`<span class="n">${j+1}</span>`:'';
+    $('#mt').innerHTML=s.l.map((y,k)=>{const jl=ks.indexOf(y),jr=ks.findIndex(z=>pairs[z]===k);return `<button class="opt${sel===y?' sel':''}${jl>=0?' paired':''}" data-s="l" data-v="${k}">${no(jl)}${y}</button><button class="opt${jr>=0?' paired':''}" data-s="r" data-v="${k}">${no(jr)}${s.r[k]}</button>`}).join('');$('#oclr').disabled=!ks.length&&!sel;
+    app.querySelectorAll('#mt .opt').forEach(b=>b.onclick=()=>{const pairs=Object.assign({},rep[i]||{}),v=b.dataset.s==='l'?s.l[+b.dataset.v]:+b.dataset.v;
+     if(b.dataset.s==='l'){if(v in pairs)delete pairs[v];sel=sel===v?null:v}
+     else{const pris=Object.keys(pairs).find(k=>pairs[k]===v);if(pris!=null)delete pairs[pris];if(sel!=null){pairs[sel]=v;sel=null}}
+     rep[i]=Object.keys(pairs).length?pairs:null;draw();maj()})};
+   $('#oclr').onclick=()=>{rep[i]=null;sel=null;draw();maj()};draw()}};
+ /* Écran de remise : ce qui reste sans réponse, d'un toucher on y retourne. Rien n'est encore noté. */
+ const remise=()=>{const v=vides();
+  app.innerHTML=`<div class="xrecap">${head().replace(/<span class="cnt">[^<]*<\/span>/,'')}<div class="card res"><div class="big">${ic(v.length?'info':'check')}</div><h2>Rendre ta copie ?</h2>
+   <p id="xbilan">${N-v.length} réponse${N-v.length>1?'s':''} sur ${N}${v.length?' · '+v.length+' sans réponse':''}</p>
+   ${v.length?`<p class="eyebrow" style="margin-top:8px">Sans réponse, une question compte fausse. Touche un numéro pour y retourner.</p><div class="xgrid" style="justify-content:center">${v.map(k=>`<button data-x="${k}" class="${vu[k]?'p':''}" aria-label="Retourner à la question ${k+1}">${k+1}</button>`).join('')}</div>`:'<p class="eyebrow" style="margin-top:8px">Tu peux encore relire et changer une réponse. Après la remise, plus rien ne bouge.</p>'}
+   <div class="nav" style="justify-content:center;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="xback">${ic('chevL')}Revenir aux questions</button><button class="btn" id="xrendre">${ic('check')}Rendre ma copie</button></div>
+   <div class="nav" style="justify-content:center;margin-top:8px"><button class="btn ghost sm" id="xabandon">Abandonner sans noter</button></div></div></div>`;
+  $('#squit').onclick=quitter_;brancheGrille();$('#xback').onclick=()=>{const w=vides();if(w.length)i=w[0];show()};$('#xrendre').onclick=corrige;$('#xabandon').onclick=partir};
+ const partir=()=>{stopChrono();document.body.classList.remove('focus');go(retour)};
+ /* La croix : rien de répondu, on sort sans trace ; sinon l'écran de remise propose de rendre ou d'abandonner. */
+ const quitter_=()=>{nfaites()?remise():partir()};
+ const juste=k=>{const s=Q[k],q=s.q,v=rep[k];if(!faite(k))return false;
+  if(q.t==='qcm')return v===q.a;if(q.t==='vf')return (v===1)===!!q.a;
+  if(q.t==='num'){const n=parseFloat(String(v).replace(',','.'));return Math.abs(n-q.a)/Math.max(1e-9,Math.abs(q.a))*100<=(q.tol||1)}
+  if(q.t==='order')return v.every((y,j)=>y===q.i[j]);if(q.t==='match')return q.p.every(p=>s.r[v[p[0]]]===p[1]);return false};
+ const maRep=k=>{const s=Q[k],q=s.q,v=rep[k];if(!faite(k))return '<i>Sans réponse</i>';
+  if(q.t==='qcm')return q.c[v];if(q.t==='vf')return v===1?'Vrai':'Faux';if(q.t==='num')return esc(v)+' '+(q.u||'');
+  if(q.t==='order')return '<ol class="fbo">'+v.map(y=>'<li>'+y+'</li>').join('')+'</ol>';
+  return '<ul class="fbo">'+s.l.filter(y=>y in v).map(y=>'<li><b>'+y+'</b> : '+s.r[v[y]]+'</li>').join('')+'</ul>'};
+ /* Remise : c'est seulement ici que le suivi est écrit, puis la correction complète s'affiche. */
+ const corrige=()=>{if(rendu)return;rendu=true;stopChrono();document.body.classList.remove('focus');fermerPanneau();
+  const res=Q.map((s,k)=>({k,s,fait:faite(k),ok:juste(k)})),nok=res.filter(r=>r.ok).length,protege=[],miss=[];
+  res.forEach(r=>{if(!r.fait)return;const x=r.s.x,c=cf[r.k];
+   if(c){S.conf=S.conf||{};const a=S.conf[c]||(S.conf[c]=[0,0]);a[0]++;if(r.ok)a[1]++}
+   repondu(r.ok,r.s.q);const av=noter(x.id,r.ok?3:1);if(!r.ok){miss.push(x);if(av)protege.push(x.id)}});
+  const xp=nok*6;if(xp)gainXP(xp);S.coins+=nok;if(nfaites()>=Math.min(5,N))questAdd('rev');
+  /* paires confondues, comme en révision : deux questions ratées de la même note comptées ensemble */
+  S.cf=S.cf||{};for(let a=0;a<miss.length;a++)for(let b=a+1;b<miss.length;b++)if(confondables(miss[a],miss[b])){const k=[miss[a].id,miss[b].id].sort().join('|');S.cf[k]=(S.cf[k]||0)+1}
+  const pct=Math.round(nok/N*100),n6=Math.round((1+5*nok/N)*10)/10,nv=res.filter(r=>!r.fait).length;
+  S.log=(S.log||[]).concat([{d:today(),t:titre,e:o.epr==null?-1:o.epr,n:nok,tot:N,f:FIN?1:0}]).slice(-100);
+  save();pushRappels();tabs();
+  const ligne=r=>{const x=r.s.x,q=r.s.q;return `<div class="xc ${r.ok?'ok':r.fait?'ko':'nr'}"><div class="eyebrow">Question ${r.k+1} · ${r.ok?'juste':r.fait?'fausse':'sans réponse'}</div><b>${fx(q.q)}</b>
+   <div class="xr"><span>Ta réponse</span><div>${maRep(r.k)}</div></div>${r.ok?'':`<div class="xr bon"><span>Attendu</span><div>${bonne(q)}</div></div>`}
+   ${q.e?`<div class="xe">${fx(q.e)}</div>`:''}${srcLine(x)}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>${btnCom(x)}${r.ok?'':leech(x)}</div>`};
+  const faux=res.filter(r=>!r.ok),bons=res.filter(r=>r.ok);
+  app.innerHTML=hud()+`<div class="card res"><div class="big">${pct>=80?ic('brain'):pct>=50?ic('trend'):ic('refresh')}</div><h2>${esc(titre)}</h2><p>${nok} / ${N} · ${pct} %</p>
+   ${nv?`<p class="eyebrow">${nv} question${nv>1?'s':''} sans réponse, comptée${nv>1?'s':''} fausse${nv>1?'s':''}.</p>`:''}
+   <p id="note6">Note <b class="gnote ${clsNote(n6)}">${fmt1(n6)}</b> / 6${FIN?' · '+Math.max(1,Math.round((Date.now()-T0)/6e4))+' min sur '+o.min:''}</p>
+   <div class="gain"><span class="pill">+<span class="count" data-to="${xp}">0</span> XP</span><span class="pill">${ic('coin')}+<span class="count" data-to="${nok}">0</span></span></div>${objectifLine()}
+   ${protege.length?`<div class="fb" style="text-align:left"><b>${protege.length} carte${protege.length>1?'s':''} ratée${protege.length>1?'s':''} mais pas encore due${protege.length>1?'s':''}</b><div>Leur date n'a pas bougé : un examen blanc ne défait pas ton planning. À toi de voir.</div><button class="btn ghost sm" id="ramener" style="margin-top:10px">${ic('refresh')}Les ramener à demain</button></div>`:''}
+   <div class="miss xcor"><div class="eyebrow">${faux.length?'Correction : '+faux.length+' à revoir':'Sans faute'}</div>${faux.map(ligne).join('')}
+   ${bons.length?`<details class="xbons"><summary>${bons.length} réponse${bons.length>1?'s':''} juste${bons.length>1?'s':''}</summary>${bons.map(ligne).join('')}</details>`:''}</div>
+   <div class="nav" style="justify-content:center"><button class="btn" id="ok">Retour</button></div></div>`;
+  $('#ok').onclick=()=>go(retour);
+  const rb=$('#ramener');if(rb)rb.onclick=()=>{ramener(protege);rb.disabled=true;rb.textContent='Ramenées à demain';tabs()};
+  if(pct>=80){SFX.win();hap('win');if(pct===100&&N>=5)confetti(100)}else SFX.ok();animRes(0);flushCele();window.scrollTo(0,0)};
+ const partirChrono=()=>{if(!o.min)return;T0=Date.now();FIN=T0+o.min*6e4;stopChrono();CHRONO=setInterval(()=>{const e=$('#chr'),part=Math.max(0,(FIN-Date.now())/(o.min*6e4));
+  if(e){e.textContent=restant();e.classList.toggle('fin',part<=.1);e.classList.toggle('court',part>.1&&part<=.25)}
+  const ji=$('#tji');if(ji){ji.style.width=(part*100).toFixed(1)+'%';ji.className=part<=.1?'fin':part<=.25?'court':''}
+  if(Date.now()>=FIN){toast(ic('clock')+'Temps écoulé : copie rendue');corrige()}},1000)};
+ /* Le cadre avant de commencer : format, durée, support, et les règles du jeu. Le chrono part au « Commencer ». */
+ const f=EPR[o.epr]&&o.epr>=0?EPR[o.epr]:null;
+ app.innerHTML=`<div class="sess"><div class="card res"><div class="big">${ic('clock')}</div><h2>${esc(titre)}</h2>
+  <p>${N} questions${o.min?' · '+o.min+' minutes':' · sans chrono'} · ${esc(o.support||'sans support')}</p>
+  ${f?`<p class="eyebrow" style="margin-top:8px">Le jour de l'examen : ${esc(f.d)}</p>`:''}
+  <ul class="xregles"><li>Aucune correction avant la fin.</li><li>Tu peux passer une question et y revenir.</li><li>Tu peux changer une réponse jusqu'à la remise.</li><li>${o.min?'À la fin du temps, la copie part telle quelle.':'Tu rends ta copie quand tu veux.'}</li><li>Une question sans réponse compte fausse.</li></ul>
+  <div class="nav" style="justify-content:center;gap:10px"><button class="btn ghost" id="xquit">Retour</button><button class="btn" id="xgo">${ic('check')}Commencer</button></div></div></div>`;
+ $('#xquit').onclick=partir;$('#xgo').onclick=()=>{partirChrono();show()}}
+function reviser(list,o){o=o||{};if(o.examen)return examen(list,o);list=list.filter(id=>ITEM[id]);if(!list.length){toast(ic('check')+'Aucune carte à montrer');return}
  fermerPanneau();document.body.classList.add('focus');tabs();
  let i=0,xp=0,nok=0,combo=0;const miss=[],titre=o.titre||'Révision',retour=o.retour||TAB;
  /* examen chronométré : o.min minutes pour toute la liste, les questions non faites comptent fausses */
@@ -1277,7 +1411,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
      réponse sans trou honnête passe directement en réponse libre */
   let lv=o.examen||x.kind==='k'||/^(num|calc)$/.test(x.q.t)?0:niveau(r0);if(x.q&&x.q.t==='carte')lv=Math.max(lv,r0?niveau(r0):2);if(x.id.startsWith('c-'))lv=Math.max(lv,2);
   const TR=x.kind==='k'?x.tr:lv===1?(x.q.t==='match'?trousMatch(x.q):trous(reponseTexte(x.q))):null;if(lv===1&&!TR)lv=2;
-  if(x.kind==='k'||TR){const un=TR.R.length===1,rt=x.kind==='k'?x.b.h:fx(x.q.q),eti=x.kind==='k'?`point clé ${x.rang+1} / ${x.n} · ch. ${x.li}`:`ch. ${x.li} · ${esc(L[x.li].t)}`;
+  if(x.kind==='k'||TR){const un=TR.R.length===1,rt=x.kind==='k'?x.b.h:fx(x.q.q),eti=x.kind==='k'?`point clé ${x.rang+1} / ${x.n} · ${theme(x.li)}`:`${theme(x.li)}`;
    app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>${eti}</span></div>
    <div class="recto trous">${x.kind==='q'?contexte(x):''}<div class="rt">${rt}</div><p class="phrase">${trouHtml(TR)}</p>${trouCue(TR)}<div class="hint">${un?'Dis à voix haute ce qui manque, puis retourne.':'Dis à voix haute les '+TR.R.length+' réponses, puis retourne.'} Touche un trou pour n'en révéler qu'un.</div></div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn ghost sm" id="indice">${ic('info')}Indice</button><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
@@ -1298,12 +1432,12 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
      const aide=TR.K[t]==='nombre'?(u?'… '+esc(u):nb+' chiffre'+(nb>1?'s':'')):esc(r.slice(0,1))+' …';
      e.innerHTML=`<i class="tn">${t+1}</i><span class="ta">${aide}</span>`});$('#indice').disabled=true};
    $('#flip').onclick=()=>{app.querySelectorAll('.trou').forEach((e,k)=>{e.textContent=TR.R[+e.dataset.t];e.classList.add('vu');e.style.animationDelay=k*70+'ms';e.removeAttribute('aria-label')});
-    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b>${(e=>e?`<div>${fx(e)}</div>`:'')(explSans(x.q))}</div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${x.b.src}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>${btnCom(x)}`;
+    app.querySelectorAll('.tc').forEach(b=>{b.classList.add('vu');b.disabled=true});$('#verso').innerHTML=`${x.kind==='q'?`<div class="fb ok"><b>${bonne(x.q)}</b>${(e=>e?`<div>${fx(e)}</div>`:'')(explSans(x.q))}</div>`:''}${x.b.k?`<div class="key" style="margin-top:8px"><div class="eyebrow">Points clés de la note</div>${fmtKey(x.b.k)}</div>`:''}${x.b.src?`<div class="src">Source : ${srcTxt(x.b.src)}</div>`:''}<button class="btn ghost sm" data-n="${x.b.id}" style="margin-top:8px">${ic('book')}Note d'origine</button>${btnCom(x)}`;
     $('#act').innerHTML=gradeBtns(x.id,[1,2,3,4]);
     app.querySelectorAll('.grades [data-g]').forEach(b=>b.onclick=()=>{const g=+b.dataset.g,ok=g>1;const av=o.libre?false:noter(x.id,g);if(av&&!ok&&protege.indexOf(x.id)<0)protege.push(x.id);repondu(ok);questAdd('carte');feel(ok,ok?++combo:(combo=0));if(ok){nok++;questAdd('combo',combo);gagne(4)}else{miss.push(x);rejouer(x)}suivant()})};
    return}
   if(lv>=2){const q=x.q;
-   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)]} · ${lv>=3?'explique':'rappel'}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div>${contexte(x)}<div class="q">${consigne(q,lv)}</div>${propositions(q)}
+   app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)]} · ${lv>=3?'explique':'rappel'}</span><span>${theme(x.li)}</span></div>${contexte(x)}<div class="q">${consigne(q,lv)}</div>${propositions(q)}
    <div class="hint" id="libre">Réponds dans ta tête ou à voix haute, puis retourne la carte.</div><div id="verso"></div>
    <div id="act"><div class="ordact"><button class="btn sm" id="flip">${ic('flip')}Retourner</button></div></div></div></div>`;
    $('#squit').onclick=()=>fin();
@@ -1317,7 +1451,7 @@ function reviser(list,o){o=o||{};list=list.filter(id=>ITEM[id]);if(!list.length)
   if(q.t==='num')body=`<div class="numin"><input id="nin" inputmode="decimal" placeholder="valeur" autocomplete="off" aria-label="Ta réponse"><span class="u">${q.u||''}</span><button class="btn" id="val">OK</button></div>`;
   if(q.t==='order'){st.items=shuffle(q.i);st.pick=[];body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche les étapes dans le bon ordre. Touche une étape numérotée pour la retirer.</p><div class="opts order" id="ord"></div><div class="ordact"><button class="btn ghost sm" id="oclr" disabled>${ic('x')}Tout effacer</button><button class="btn sm" id="oval" disabled>${ic('check')}Valider</button></div>`}
   if(q.t==='match'){st.l=shuffle(q.p.map(p=>p[0]));st.r=shuffle(q.p.map(p=>p[1]));st.sel=null;st.pairs={};body=`<p style="color:var(--ink2);font-size:14px;margin:0 0 8px">Touche un terme, puis sa définition. Touche une paire faite pour la défaire.</p><div class="match" id="mt"></div><div class="ordact"><button class="btn ghost sm" id="oclr" disabled>${ic('x')}Tout effacer</button><button class="btn sm" id="oval" disabled>${ic('check')}Valider</button></div>`}
-  app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.examen?(o.support?' · '+o.support:''):' · '+(estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)])}</span><span>ch. ${x.li} · ${esc(L[x.li].t)}</span></div>${o.examen?'':contexte(x)}<div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}<div id="fb"></div></div></div>`;
+  app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)}${o.examen?(o.support?' · '+o.support:''):' · '+(estReprise()?'reprise':o.libre?'hors planning':ETAT[etat(r0)])}</span><span>${theme(x.li)}</span></div>${o.examen?'':contexte(x)}<div class="q">${q.q}</div>${CONFT.test(q.t)?CONFH:''}${body}${classeur(x)}<div id="fb"></div></div></div>`;
   $('#squit').onclick=()=>fin();
   let fait=false,cf=null;
   /* confiance avant la réponse : un toucher, facultatif, retouché pour l'enlever */
@@ -1494,13 +1628,13 @@ function scenario(i,ep){const retour=TAB;if(i==null){const d=scDue(ep);i=d.lengt
  libere=enregistreur($('#sc-rec'));$('#sc-ia').onclick=()=>briefIA(x,$('#sc-iab'));
  $('#quit').onclick=()=>sortir(()=>go(retour));$('#sc-prev').onclick=()=>sortir(()=>scenario(meme[pos-1]));$('#sc-next').onclick=()=>sortir(()=>scenario(meme[pos+1]));
  $('#sc-go').onclick=()=>{stop();stop=rebours($('#sc-t'),x.d*60)};
- $('#sc-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Trame de réponse</div><p class="src" style="margin:4px 0 8px">La trame est le fil de ta réponse : suis les étapes dans l'ordre.${x.ap?' Sous chaque étape, « Concrètement » montre quoi dire ou quoi faire dans cette situation. Reprends l\'idée avec tes mots, ne récite pas.':''}</p><ol class="lecture" style="padding-left:22px">${x.tr.map((p,k)=>'<li style="margin-bottom:8px">'+p+(x.ap&&x.ap[k]?'<div class="ap"><b>Concrètement.</b> '+x.ap[k]+'</div>':'')+'</li>').join('')}</ol><p class="src">Source : ${x.src}</p><div class="eyebrow" style="margin-top:12px">Note toi, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="sc-g"></div>`;
+ $('#sc-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Trame de réponse</div><p class="src" style="margin:4px 0 8px">La trame est le fil de ta réponse : suis les étapes dans l'ordre.${x.ap?' Sous chaque étape, « Concrètement » montre quoi dire ou quoi faire dans cette situation. Reprends l\'idée avec tes mots, ne récite pas.':''}</p><ol class="lecture" style="padding-left:22px">${x.tr.map((p,k)=>'<li style="margin-bottom:8px">'+p+(x.ap&&x.ap[k]?'<div class="ap"><b>Concrètement.</b> '+x.ap[k]+'</div>':'')+'</li>').join('')}</ol><p class="src">Source : ${srcTxt(x.src)}</p><div class="eyebrow" style="margin-top:12px">Note toi, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="sc-g"></div>`;
   grilleEval($('#sc-g'),x.g,(sc,max)=>{libere();gradeFr(x.k,sc>=Math.ceil(max*.6),Math.round(15*sc/max),sc,max);toast(ic('check')+'Oral noté '+sc+' / '+max);const d=scDue(x.ep);d.length?scenario(d[0].i):go(retour)});$('#rev').scrollIntoView({block:'start',behavior:'smooth'})}}
 function etudeCas(i){const retour=TAB;if(!S.cas){toast('Active les études de cas dans le profil');return}if(i==null){const d=casDue();i=d.length?d[0].i:0}const x=CAS[i];let stop=()=>{};
  app.innerHTML=hud()+`<div class="card"><div class="eyebrow">Étude de cas ${i+1} / ${CAS.length} · épreuve ${x.ep} · ${x.d} min</div><h2>${x.t}</h2><div class="lecture"><p>${x.c}</p><div class="eyebrow" style="margin-top:8px">Données</div>${x.g}</div><div class="tip"><b>Sur papier, comme à l'examen.</b> Écris ta réponse complète avant de révéler le corrigé. À l'épreuve 1, c'est la démarche qui rapporte les points, pas seulement le chiffre final.</div><div style="display:flex;gap:8px;align-items:center;margin:10px 0"><button class="btn" id="cas-go">${ic('clock')}Lancer ${x.d} min</button><span class="mono" id="cas-t" role="timer" style="font-size:22px"></span></div><div id="rev"><button class="btn wide ghost" id="cas-show">${ic('eye')}Révéler le corrigé</button></div><div class="nav"><button class="btn ghost sm" id="cas-prev" ${i?'':'disabled'} aria-label="Cas précédent">${ic('chevL')}</button><button class="btn ghost sm" id="quit">Retour</button><button class="btn ghost sm" id="cas-next" ${i<CAS.length-1?'':'disabled'} aria-label="Cas suivant">${ic('chevR')}</button></div></div>`;
  $('#quit').onclick=()=>{stop();go(retour)};$('#cas-prev').onclick=()=>{stop();etudeCas(i-1)};$('#cas-next').onclick=()=>{stop();etudeCas(i+1)};
  $('#cas-go').onclick=()=>{stop();stop=rebours($('#cas-t'),x.d*60)};
- $('#cas-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Corrigé</div><div class="lecture">${x.r}</div><p class="src">Source : ${x.src}</p><div class="eyebrow" style="margin-top:12px">Note ta copie, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="cas-g"></div>`;
+ $('#cas-show').onclick=()=>{stop();$('#rev').innerHTML=`<div class="eyebrow" style="margin-top:6px">Corrigé</div><div class="lecture">${x.r}</div><p class="src">Source : ${srcTxt(x.src)}</p><div class="eyebrow" style="margin-top:12px">Note ta copie, critère par critère : 0 absent, 1 partiel, 2 complet</div><div id="cas-g"></div>`;
   grilleEval($('#cas-g'),GCAS,(sc,max)=>{gradeFr(casKey(i),sc>=Math.ceil(max*.6),Math.round(25*sc/max),sc,max);toast(ic('check')+'Cas noté '+sc+' / '+max);const d=casDue();d.length?etudeCas(d[0].i):go(retour)})}}
 /* Classeur : trouver la page ou la formule en moins de 60 s, comme le jour de l'épreuve. Cinq par séance,
    les moins bien réussis d'abord, espacés comme le rappel libre (clés clx dans S.fr). */
@@ -2396,7 +2530,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v45"></script>
-<script src="acces.js?v=bq5-v45"></script>
+<script src="entrainement.js?v=bq5-v50"></script>
+<script src="acces.js?v=bq5-v50"></script>
 </body>
 </html>
