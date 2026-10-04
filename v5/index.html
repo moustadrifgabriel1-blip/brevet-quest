@@ -1612,7 +1612,9 @@ function eprStat(i){const cs=eprCartes(i);let seen=0,mast=0,frag=0;cs.forEach(x=
 const weakFirst=pool=>{const f=x=>{const r=S.sr[x.id];return !r||r.f>0||r.n<2};return shuffle(pool.filter(f)).concat(shuffle(pool.filter(x=>!f(x))))};
 /* Format réel, proportionnel à la durée de l'épreuve : questions, minutes, support autorisé.
    Épreuve 1 : les chapitres de l'épreuve 1 (domaines A, C, D, E, F du profil de qualification). */
-const FMT=[{n:30,m:45},{n:15,m:20,s:'fascicule autorisé'},{n:20,m:30,s:'classeur autorisé'},{n:20,m:25}];
+/* Durées resserrées le 4 oct. 2026 : Gab finissait 20 questions en 15 minutes sur 25, le chrono ne pressait pas.
+   Environ une minute par question avec support, un peu moins sans. */
+const FMT=[{n:30,m:30},{n:15,m:15,s:'fascicule autorisé'},{n:20,m:20,s:'classeur autorisé'},{n:20,m:18}];
 /* Tirage mélangé : une question par chapitre à tour de rôle, chapitres dans le désordre, puis tout mélangé. */
 function tirage(lis,n){const g=shuffle(lis).map(li=>shuffle(L[li].q.filter(q=>q.t!=='carte').map(q=>ITEM[q.id]).filter(Boolean)));const o=[];
  while(o.length<n&&g.some(a=>a.length))g.forEach(a=>{if(a.length&&o.length<n)o.push(a.pop())});return shuffle(o)}
@@ -2613,7 +2615,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v60"></script>
-<script src="acces.js?v=bq5-v60"></script>
+<script src="entrainement.js?v=bq5-v61"></script>
+<script src="acces.js?v=bq5-v61"></script>
 </body>
 </html>
