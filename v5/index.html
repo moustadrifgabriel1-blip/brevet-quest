@@ -1158,7 +1158,7 @@ function repriseHtml(){const r=rt10(),a=rtAttente(),s=rtSoir(),soir=new Date().g
 /* Cartes sorties de la file (ratées SANG jours différents, ou suspendues à la main) : elles ne reviennent plus
    toutes seules, donc Aujourd'hui les compte, avec la liste des Statistiques à un toucher. */
 const sorties=()=>Object.keys(S.susp).filter(id=>S.susp[id]&&ITEM[id]&&!REMPL[id]);
-function sortiesHtml(){const n=sorties().length,s=n>1?'s':'';return n?`<button class="btn ghost sm" id="m-sorties" style="margin:8px 0">${ic('alert')}${n} carte${s} sortie${s} de la file, à réécrire</button>`:''}
+function sortiesHtml(){const n=sorties().length,s=n>1?'s':'';return n?`<button class="btn ghost sm" id="m-sorties" style="margin:8px 0">${ic('alert')}${n} carte${s} sortie${s} de la file, au repos</button>`:''}
 function voirSorties(){go('stat');const d=app.querySelector('[data-pli="chap"]');if(d){d.open=true;d.scrollIntoView({block:'start'})}}
 /* La file du jour : retard, dû, puis nouvelles cartes dans la limite du quota. */
 function lancerFile(){const f=fileDuJour();const l=f.retard.concat(f.auj).slice(0,80).concat(f.nv);if(!l.length){toast(ic('check')+'Rien à réviser pour l\'instant');return}reviser(l,{titre:'Révision du jour'})}
@@ -1268,7 +1268,7 @@ function noter(id,g){const avant=S.sr[id];newDay();
  /* escalier de rappel : première rencontre vers le niveau 1 ; ensuite un niveau de plus après deux
     réussites de suite, un niveau de moins sur échec, jamais sous 1 (plus jamais de QCM seul) */
  const lv=niveau(avant),lp=avant&&avant.lp||0;
- if(!avant){apres.lv=1;apres.lp=0}else if(g===1){apres.lv=Math.max(1,lv-1);apres.lp=0}else if(lp+1>=2&&lv<3){apres.lv=lv+1;apres.lp=0}else{apres.lv=lv;apres.lp=lp+1}
+ if(!avant){apres.lv=1;apres.lp=0}else if(g===1){apres.lv=lv?Math.max(1,lv-1):0;apres.lp=0}else if(lp+1>=2&&lv<3){apres.lv=lv+1;apres.lp=0}else{apres.lv=lv;apres.lp=lp+1}
  /* Un seul échec compté par jour et par carte (fj : jour du dernier échec compté). Les reprises de séance servent
     à apprendre, pas à mesurer : sinon une carte neuve ratée quatre fois de suite sortait de la file dès le premier jour. */
  if(g===1){if(avant&&avant.fj===t)apres.f=avant.f||0;apres.fj=t}else if(avant&&avant.fj)apres.fj=avant.fj;
@@ -1276,14 +1276,22 @@ function noter(id,g){const avant=S.sr[id];newDay();
  if(enAvance&&apres.due<avant.due)apres.due=avant.due;
  S.sr[id]=apres;
  /* Ratée SANG jours différents : la carte ne se répète plus telle quelle. Elle sort de la file avec l'empreinte de son
-    texte ; réécrite (texte différent), elle revient toute seule, compteur d'échecs remis à zéro (reecrites). */
- if(g===1&&apres.f>=SANG&&!S.susp[id]){poserSusp(id,sig(id));toast(ic('refresh')+'Ratée '+SANG+' jours différents : cette carte sort de la file, elle doit être réécrite')}
+    texte et se repose (sg compte les mises au repos). Personne n'a rien à envoyer : elle revient toute seule, compteur
+    d'échecs à zéro, soit réécrite dans une mise à jour (texte différent), soit après son repos, au format guidé (reecrites). */
+ if(avant&&avant.sg)apres.sg=avant.sg;
+ if(g===1&&apres.f>=SANG&&!S.susp[id]){apres.sg=(apres.sg||0)+1;poserSusp(id,sig(id));toast(ic('refresh')+'Ratée '+SANG+' jours différents : cette carte se repose '+reposJ(apres)+' jours, puis revient en version guidée')}
  save();return enAvance}
 /* Poser ou lever une suspension : la clé reste, à 0 quand la carte revient en file, avec son horodatage
    (S.suspTs) pour que la fusion sache laquelle des deux valeurs est la plus récente. 1, true ou une empreinte : suspendue. */
 const poserSusp=(id,v)=>{S.susp[id]=v||0;(S.suspTs=S.suspTs||{})[id]=Date.now()};
 const sig=id=>{const x=ITEM[id];return x?'s'+hash(x.kind==='k'?x.txt:(x.q.q+'|'+(x.q.t==='calc'?x.q.f:plain(bonne(x.q))))):1};
-function reecrites(){let n=0;for(const id in S.susp){const v=S.susp[id];if(typeof v==='string'&&ITEM[id]&&v!==sig(id)){poserSusp(id,0);const r=S.sr[id];if(r){r.f=0;r.due=Math.min(r.due,tN())}n++}}if(n)save({ts:false});return n}
+/* Repos d'une carte sortie de la file : REPOS jours la première fois, le double à chaque rechute. Au retour elle
+   repart du format guidé de la découverte (niveau 0) et remonte l'escalier : ce n'est plus la même épreuve. */
+const REPOS=7,reposJ=r=>REPOS*Math.pow(2,Math.min(3,Math.max(0,(r&&r.sg||1)-1)));
+function reecrites(){let n=0;const m=Date.now();for(const id in S.susp){const v=S.susp[id];if(typeof v!=='string'||!ITEM[id])continue;
+  const r=S.sr[id],ts=(S.suspTs||{})[id],repose=v===sig(id)&&!!ts&&m-ts>=reposJ(r)*864e5;
+  if(v!==sig(id)||repose){poserSusp(id,0);if(r){r.f=0;r.due=Math.min(r.due,tN());if(repose){r.lv=0;r.lp=0}}n++}}
+ if(n)save({ts:false});return n}
 /* Carte ratée : reprise 10 minutes plus tard, puis une dernière fois avant de dormir. Les deux reprises
    sont hors planning (aucun effet sur FSRS) : S.rt.c[id] = [heure de l'échec, reprise à 10 min faite, reprise du soir faite]. */
 const rtJour=()=>{if(!S.rt||S.rt.d!==today())S.rt={d:today(),c:{}};return S.rt.c};
@@ -2440,7 +2448,7 @@ function parChapitre(){const rows=[];for(let li=1;li<=NCH;li++){const c=S.rc[li]
   rows.push(`<tr><td>${li} · ${esc(L[li].t)}</td><td class="r">${c?Math.round(c[0]/c[1]*100)+' %':''}</td><td class="r">${c?c[1]:0}</td><td class="r">${n||''}</td></tr>`)}
  const sg=TOUS().filter(x=>sangsue(x)||(S.susp[x.id]&&S.sr[x.id])).sort((a,b)=>S.sr[b.id].f-S.sr[a.id].f);
  return `<div class="card"><div class="eyebrow">Par chapitre · réussite des révisions notées</div>${rows.length?`<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Chapitre</th><th class="r">Réussite</th><th class="r">Notées</th><th class="r">Sangsues</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="eyebrow">Pas encore de révision notée.</p>'}
- ${sg.length?`<div class="eyebrow" style="margin-top:12px">Cartes à réécrire · ratées ${SANG} fois ou plus · sorties de la file, elles ne se répètent plus telles quelles</div><button class="btn sm" id="sg-mail" style="margin:6px 0 10px">${ic('info')}Envoyer la liste pour les faire réécrire</button>${sg.map(x=>`<div class="fb"><b>${x.kind==='k'?x.b.h:fx(x.q.q)}</b><div>Ratée ${S.sr[x.id].f} fois · ch. ${x.li}${S.susp[x.id]?' · suspendue, hors file':''}</div><div class="ordact"><button class="btn ghost sm" data-n="${x.b.id}">${ic('book')}Relire la note</button><button class="btn ghost sm" data-susp="${x.id}">${S.susp[x.id]?'Remettre en file':'Suspendre'}</button></div></div>`).join('')}`:''}</div>`}
+ ${sg.length?`<div class="eyebrow" style="margin-top:12px">Cartes au repos · ratées ${SANG} jours différents · rien à faire : elles reviennent toutes seules, en version guidée, après une semaine</div><button class="btn ghost sm" id="sg-mail" style="margin:6px 0 10px">${ic('info')}Signaler ces cartes (facultatif)</button>${sg.map(x=>`<div class="fb"><b>${x.kind==='k'?x.b.h:fx(x.q.q)}</b><div>Ratée ${S.sr[x.id].f} fois · ch. ${x.li}${S.susp[x.id]?' · suspendue, hors file':''}</div><div class="ordact"><button class="btn ghost sm" data-n="${x.b.id}">${ic('book')}Relire la note</button><button class="btn ghost sm" data-susp="${x.id}">${S.susp[x.id]?'Remettre en file':'Suspendre'}</button></div></div>`).join('')}`:''}</div>`}
 /* Note estimée sur 6, par épreuve. Formule simple et volontairement prudente :
      p = moyenne, sur toutes les cartes de l'épreuve, de la probabilité de rappel FSRS aujourd'hui
          (une carte jamais vue compte 0) ;
@@ -2605,7 +2613,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v58"></script>
-<script src="acces.js?v=bq5-v58"></script>
+<script src="entrainement.js?v=bq5-v59"></script>
+<script src="acces.js?v=bq5-v59"></script>
 </body>
 </html>
