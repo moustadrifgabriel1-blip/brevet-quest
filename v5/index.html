@@ -1740,7 +1740,7 @@ function classeurEx(){const retour=TAB,E=ENTR_.CLASSEUR||[];if(!E.length){toast(
  const ordre=shuffle(base).sort((a,b)=>((S.fr[clxKey(a)]||{}).due||0)-((S.fr[clxKey(b)]||{}).due||0)).slice(0,6);let k=0,rap=0,len=0,rat=0,stop=()=>{};
  const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
  const show=()=>{const i=ordre[k],x=E[i],sup=x.ep===2?'fascicule':'classeur',t0=Date.now();
-  app.innerHTML=hud()+`<div class="card"><div class="eyebrow">Classeur ${k+1} / ${ordre.length} · épreuve ${x.ep} · ${x.ep===2?'fascicule de 20 pages':'classeur autorisé'}</div><h2>${x.q}</h2><div class="tip"><b>Ouvre ton ${sup} et cherche.</b> Moins de 30 s, c'est prêt pour l'examen. Moins de 1 min 30, c'est à retravailler.</div><div style="margin:10px 0"><span class="mono" id="clx-t" role="timer" aria-label="Temps écoulé" style="font-size:22px">0:00</span></div><div id="rev"><div class="nav"><button class="btn ghost" id="no">Pas trouvé</button><button class="btn" id="yes">${ic('check')}Trouvé</button></div></div><div class="nav"><button class="btn ghost sm" id="quit">${ic('x')}Arrêter</button></div></div>`;
+  app.innerHTML=hud()+`<div class="card"><div class="eyebrow">Classeur ${k+1} / ${ordre.length} · épreuve ${x.ep}${x.d?' · '+esc(x.d):''}</div><h2>${x.q}</h2><div class="tip"><b>Ouvre ton ${sup} et cherche.</b> Moins de 30 s, c'est prêt pour l'examen. Moins de 1 min 30, c'est à retravailler.</div><div style="margin:10px 0"><span class="mono" id="clx-t" role="timer" aria-label="Temps écoulé" style="font-size:22px">0:00</span></div><div id="rev"><div class="nav"><button class="btn ghost" id="no">Pas trouvé</button><button class="btn" id="yes">${ic('check')}Trouvé</button></div></div><div class="nav"><button class="btn ghost sm" id="quit">${ic('x')}Arrêter</button></div></div>`;
   const el=$('#clx-t'),sec=()=>Math.round((Date.now()-t0)/1000);let id=setInterval(()=>{if(!el.isConnected)return clearInterval(id);const s=sec();el.textContent=fmt(s);el.classList.toggle('fin',s>CLX_LENT)},1000);stop=()=>clearInterval(id);
   $('#quit').onclick=()=>{stop();k?bilan():go(retour)};
   const fin=trouve=>{stop();const s=sec(),ok=clxNoter(clxKey(i),s,trouve);
@@ -2615,7 +2615,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v62"></script>
-<script src="acces.js?v=bq5-v62"></script>
+<script src="entrainement.js?v=bq5-v63"></script>
+<script src="acces.js?v=bq5-v63"></script>
 </body>
 </html>
