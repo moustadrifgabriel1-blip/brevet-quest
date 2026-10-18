@@ -1525,7 +1525,9 @@ function reviser(list,o){o=o||{};if(o.examen)return examen(list,o);list=list.fil
  const show=()=>{const x=ITEM[list[i]],t0=Date.now(),r0=S.sr[x.id];
   /* niveau de rappel : les calculs gardent leur format, un examen blanc garde le format réel ; une bonne
      réponse sans trou honnête passe directement en réponse libre */
-  let lv=x.kind==='k'||/^(num|calc)$/.test(x.q.t)?0:niveau(r0);if(x.q&&x.q.t==='carte')lv=Math.max(lv,r0?niveau(r0):2);if(x.id.startsWith('c-'))lv=Math.max(lv,2);
+  let lv=x.kind==='k'||/^(num|calc)$/.test(x.q.t)?0:niveau(r0);/* une carte à retourner n'a pas de format QCM : au niveau 0 (retour de repos, carte remise) elle passe en trous ou en réponse libre */
+  if(x.q&&x.q.t==='carte')lv=Math.max(lv,r0?Math.max(1,niveau(r0)):2);
+  if(lv===0&&x.kind==='q'&&!/^(qcm|vf|num|order|match|calc)$/.test(x.q.t))lv=2;if(x.id.startsWith('c-'))lv=Math.max(lv,2);
   const TR=x.kind==='k'?x.tr:lv===1?(x.q.t==='match'?trousMatch(x.q):trous(reponseTexte(x.q))):null;if(lv===1&&!TR)lv=2;
   if(x.kind==='k'||TR){const un=TR.R.length===1,rt=x.kind==='k'?x.b.h:fx(x.q.q),eti=x.kind==='k'?`point clé ${x.rang+1} / ${x.n} · ${theme(x.li)}`:`${theme(x.li)}`;
    app.innerHTML=`<div class="sess">${head()}<div class="card"><div class="eyebrow" style="display:flex;justify-content:space-between;gap:10px"><span>${esc(titre)} · ${estReprise()?'reprise':o.libre?'hors planning':'carte '+ETAT[etat(r0)]}</span><span>${eti}</span></div>
@@ -2636,7 +2638,7 @@ if(MIGRATION)toast(ic('check')+'Progression migrée : '+MIGRATION.apres+' cartes
 if('serviceWorker' in navigator&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{});
 window.MOTEUR_OK=true;
 </script>
-<script src="entrainement.js?v=bq5-v64"></script>
-<script src="acces.js?v=bq5-v64"></script>
+<script src="entrainement.js?v=bq5-v65"></script>
+<script src="acces.js?v=bq5-v65"></script>
 </body>
 </html>
